@@ -1,50 +1,18 @@
-// app/products/EditProduct/[productId]/page.tsx
+// app/EditProduct/[productId]/page.tsx
 'use client';
 
-import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import ProductForm from "@/components/ProductForm";
+import { useParams } from "next/navigation";
+import { useFetchData } from "@/hooks/useFetchData";
+import ProductForm from "@/components/product/ProductForm";
 
 export default function EditProduct() {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [statuses] = useState<string[]>(["DRAFT", "ACTIVE", "ARCHIVED"]);
   const { productId } = useParams();
-  const router = useRouter();
+  const [product, productLoading, productError] = useFetchData<Product>(`/api/products/${productId}`);
+  const [categories] = useFetchData<Category[]>("/api/categories");
+  const [tags] = useFetchData<Tag[]>("/api/tags");
+  const statuses = ["DRAFT", "ACTIVE", "ARCHIVED"];
 
-  useEffect(() => {
-    const fetchProductData = async () => {
-      try {
-        const response = await fetch(`/api/products/${productId}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch product");
-        }
-        const { product } = await response.json();
-        setProduct(product);
-
-        // Fetch categories and tags
-        const [categoriesResponse, tagsResponse] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/tags"),
-        ]);
-
-        const categoriesData = await categoriesResponse.json();
-        const tagsData = await tagsResponse.json();
-
-        setCategories(categoriesData);
-        setTags(tagsData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    if (productId) {
-      fetchProductData();
-    }
-  }, [productId]);
-
-  const handleSaveProduct = async (productData: any) => {
+  const handleSaveProduct = async (productData: Product) => {
     try {
       const response = await fetch(`/api/products/${productId}`, {
         method: "PUT",
@@ -67,12 +35,15 @@ export default function EditProduct() {
     }
   };
 
+  if (productLoading) return <div>Loading...</div>;
+  if (productError) return <div>Error: {productError.message}</div>;
+
   return (
     product && (
       <ProductForm
         product={product}
-        categories={categories}
-        tags={tags}
+        categories={categories || []}
+        tags={tags || []}
         statuses={statuses}
         onSave={handleSaveProduct}
       />

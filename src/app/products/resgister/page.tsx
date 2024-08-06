@@ -1,40 +1,14 @@
-// app/products/NewProduct/page.tsx
 'use client';
 
-import { useEffect, useState } from "react";
-import ProductForm from "@/components/ProductForm";
+import { useFetchData } from "@/hooks/useFetchData";
+import ProductForm from "@/components/product/ProductForm";
 
 export default function NewProduct() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [statuses] = useState<string[]>(["DRAFT", "ACTIVE", "ARCHIVED"]);
+  const [categories] = useFetchData<Category[]>("/api/categories");
+  const [tags] = useFetchData<Tag[]>("/api/tags");
+  const statuses = ["DRAFT", "ACTIVE", "ARCHIVED"];
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch("/api/categories");
-        const data = await response.json();
-        setCategories(data || []);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-
-    const fetchTags = async () => {
-      try {
-        const response = await fetch("/api/tags");
-        const data = await response.json();
-        setTags(data || []);
-      } catch (error) {
-        console.error("Error fetching tags:", error);
-      }
-    };
-
-    fetchCategories();
-    fetchTags();
-  }, []);
-
-  const handleSaveProduct = async (productData: any) => {
+  const handleSaveProduct = async (productData: Product) => {
     try {
       const response = await fetch("/api/products", {
         method: "POST",
@@ -59,8 +33,8 @@ export default function NewProduct() {
 
   return (
     <ProductForm
-      categories={categories}
-      tags={tags}
+      categories={categories || []}
+      tags={tags || []}
       statuses={statuses}
       onSave={handleSaveProduct}
     />
