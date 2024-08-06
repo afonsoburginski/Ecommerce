@@ -65,7 +65,7 @@ export default function ProductForm({ product, categories, tags, statuses, onSav
 
   useEffect(() => {
     if (!product) {
-      setProductImages(["/placeholder.png", "/placeholder.png", "/placeholder.png"]);
+      setProductImages(["/placeholder.png", "/placeholder.png", "/placeholder.png", "/placeholder.png"]);
     }
   }, [product]);
 
@@ -144,140 +144,142 @@ export default function ProductForm({ product, categories, tags, statuses, onSav
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Stock</CardTitle>
-                    <CardDescription>
-                      Manage stock and pricing information.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[100px]">SKU</TableHead>
-                          <TableHead>Stock</TableHead>
-                          <TableHead>Price</TableHead>
-                          <TableHead className="w-[100px]">Size</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-semibold">
-                            <Input
-                              id="sku"
-                              type="text"
-                              className="w-full"
-                              value={productSKU}
-                              onChange={(e) => setProductSKU(e.target.value)}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Label htmlFor="stock-1" className="sr-only">
-                              Stock
-                            </Label>
-                            <Input
-                              id="stock-1"
-                              type="number"
-                              value={productStock}
-                              onChange={(e) =>
-                                setProductStock(Number(e.target.value))
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Label htmlFor="price-1" className="sr-only">
-                              Price
-                            </Label>
-                            <Input
-                              id="price-1"
-                              type="number"
-                              value={productPrice}
-                              onChange={(e) =>
-                                setProductPrice(Number(e.target.value))
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <ToggleGroup
-                              type="single"
-                              defaultValue="s"
-                              variant="outline"
-                            >
-                              <ToggleGroupItem value="s">S</ToggleGroupItem>
-                              <ToggleGroupItem value="m">M</ToggleGroupItem>
-                              <ToggleGroupItem value="l">L</ToggleGroupItem>
-                            </ToggleGroup>
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                  <CardFooter className="justify-center border-t p-4">
-                    <Button size="sm" variant="ghost" className="gap-1">
-                      <PlusCircle className="h-3.5 w-3.5" />
-                      Add Variant
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Product Category</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-6 sm:grid-cols-3">
-                      <div className="grid gap-3">
-                        <Label htmlFor="category">Category</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            setProductCategory(Number(value))
-                          }
-                          value={productCategory?.toString() || ""}
-                        >
-                          <SelectTrigger
-                            id="category"
-                            aria-label="Select category"
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Stock</CardTitle>
+                      <CardDescription>
+                        Manage stock and pricing information.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[100px]">SKU</TableHead>
+                            <TableHead>Stock</TableHead>
+                            <TableHead>Price</TableHead>
+                            <TableHead className="w-[100px]">Size</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="font-semibold">
+                              <Input
+                                id="sku"
+                                type="text"
+                                className="w-full"
+                                value={productSKU}
+                                onChange={(e) => setProductSKU(e.target.value)}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Label htmlFor="stock-1" className="sr-only">
+                                Stock
+                              </Label>
+                              <Input
+                                id="stock-1"
+                                type="number"
+                                value={productStock}
+                                onChange={(e) =>
+                                  setProductStock(Number(e.target.value))
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Label htmlFor="price-1" className="sr-only">
+                                Price
+                              </Label>
+                              <Input
+                                id="price-1"
+                                type="number"
+                                value={productPrice}
+                                onChange={(e) =>
+                                  setProductPrice(Number(e.target.value))
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <ToggleGroup
+                                type="single"
+                                defaultValue="s"
+                                variant="outline"
+                              >
+                                <ToggleGroupItem value="s">S</ToggleGroupItem>
+                                <ToggleGroupItem value="m">M</ToggleGroupItem>
+                                <ToggleGroupItem value="l">L</ToggleGroupItem>
+                              </ToggleGroup>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                    <CardFooter className="justify-center border-t p-4">
+                      <Button size="sm" variant="ghost" className="gap-1">
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        Add Variant
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Product Category</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid gap-6">
+                        <div className="grid gap-3">
+                          <Label htmlFor="category">Category</Label>
+                          <Select
+                            onValueChange={(value) =>
+                              setProductCategory(Number(value))
+                            }
+                            value={productCategory?.toString() || ""}
                           >
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.length > 0 && categories.map((category) => (
-                              <SelectItem
-                                key={category.id}
-                                value={category.id.toString()}
-                              >
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            <SelectTrigger
+                              id="category"
+                              aria-label="Select category"
+                            >
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories.length > 0 && categories.map((category) => (
+                                <SelectItem
+                                  key={category.id}
+                                  value={category.id.toString()}
+                                >
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-3">
+                          <Label htmlFor="tags">Tags</Label>
+                          <Select
+                            onValueChange={(value) =>
+                              setProductTags((prev) => [...prev, Number(value)])
+                            }
+                            multiple
+                          >
+                            <SelectTrigger id="tags" aria-label="Select tags">
+                              <SelectValue placeholder="Select tags" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {tags.length > 0 && tags.map((tag) => (
+                                <SelectItem
+                                  key={tag.id}
+                                  value={tag.id.toString()}
+                                >
+                                  {tag.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                      <div className="grid gap-3">
-                        <Label htmlFor="tags">Tags</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            setProductTags((prev) => [...prev, Number(value)])
-                          }
-                          multiple
-                        >
-                          <SelectTrigger id="tags" aria-label="Select tags">
-                            <SelectValue placeholder="Select tags" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {tags.length > 0 && tags.map((tag) => (
-                              <SelectItem
-                                key={tag.id}
-                                value={tag.id.toString()}
-                              >
-                                {tag.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
               <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
                 <Card>
@@ -318,28 +320,32 @@ export default function ProductForm({ product, categories, tags, statuses, onSav
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid gap-2">
-                      <Image
-                        alt="Product image"
-                        className="aspect-square w-48 h-48 rounded-md object-cover" // Reduced size for alignment
-                        height={192}
-                        src="/placeholder.png"
-                        width={192}
-                      />
-                      <div className="grid grid-cols-3 gap-2">
-                        {productImages.map((src, index) => (
-                          <button key={index}>
+                    <div className="flex flex-col space-y-2">
+                      <div className="w-full">
+                        <Image
+                          alt="Main product image"
+                          className="rounded-md object-cover"
+                          src={productImages[0] || "/placeholder.png"}
+                          width={400} // Ajuste a largura conforme necessário
+                          height={400} // Ajuste a altura conforme necessário
+                          layout="responsive"
+                        />
+                      </div>
+                      <div className="flex space-x-2">
+                        {productImages.slice(1, 3).map((src, index) => (
+                          <button key={index} className="flex-1">
                             <Image
                               alt={`Product image ${index + 1}`}
-                              className="aspect-square w-full rounded-md object-cover"
-                              height={84}
+                              className="rounded-md object-cover"
                               src={src}
-                              width={84}
+                              width={180} // Ajuste a largura conforme necessário
+                              height={180} // Ajuste a altura conforme necessário
+                              layout="responsive"
                             />
                           </button>
                         ))}
-                        <button className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed">
-                          <Upload className="h-4 w-4 text-muted-foreground" />
+                        <button className="flex-1 flex items-center justify-center rounded-md border border-dashed">
+                          <Upload className="h-6 w-6 text-muted-foreground" />
                           <span className="sr-only">Upload</span>
                         </button>
                       </div>
