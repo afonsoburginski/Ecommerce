@@ -8,19 +8,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 
 export async function GET() {
   try {
+    // Retrieve balance transactions from Stripe
     const transactions = await stripe.balanceTransactions.list({
-      limit: 100, // Limite de transações a serem retornadas
+      limit: 100, // Limit of transactions to return
     });
 
     const transactionDetails = await Promise.all(
       transactions.data.map(async (txn) => {
         try {
+          // Retrieve charge details if a source exists
           const charge = txn.source
             ? await stripe.charges.retrieve(txn.source as string)
             : null;
 
+          // Retrieve customer details if a customer exists
           let customer = null;
-          if (charge?.customer && typeof charge.customer === 'string') {
+          if (charge?.customer && typeof charge.customer === "string") {
             customer = await stripe.customers.retrieve(charge.customer);
           }
 
@@ -36,7 +39,8 @@ export async function GET() {
             cardLast4: charge?.payment_method_details?.card?.last4 || "N/A",
           };
         } catch (error) {
-          console.error(`Failed to retrieve charge or customer for transaction ${txn.id}`, error);
+          console.error(`Failed to retrieve charge or customer for transaction ${txn.id}:`, error);
+          // Return partial data even if charge or customer retrieval fails
           return {
             id: txn.id,
             amount: txn.amount / 100,
@@ -56,7 +60,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching Stripe transactions:", error);
     return NextResponse.json(
-      { error: "Failed to fetch transactions" },
+      { error: "Failed to fetch transactions", details: error.message },
       { status: 500 }
     );
   }

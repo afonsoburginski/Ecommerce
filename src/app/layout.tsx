@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Sidebar from "@/components/sidebar";
 import { Toaster } from "@/components/ui/toaster"
 import Header from "@/components/header";
-import { Providers } from "@/context/Providers";
+import { Providers } from "@/contexts/Providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

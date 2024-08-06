@@ -1,5 +1,7 @@
-'use client'
-import { useEffect, useState } from "react";
+// components/ProductForm.tsx
+'use client';
+
+import { useState, useEffect } from "react";
 import { ChevronLeft, PlusCircle, Upload } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -30,10 +32,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface Category {
   id: number;
@@ -45,79 +44,46 @@ interface Tag {
   name: string;
 }
 
-export default function NewProduct() {
-  const [productImages, setProductImages] = useState<string[]>([]);
-  const [productName, setProductName] = useState<string>("");
-  const [productDescription, setProductDescription] = useState<string>("");
-  const [productPrice, setProductPrice] = useState<number>(0);
-  const [productStock, setProductStock] = useState<number>(0);
-  const [productSKU, setProductSKU] = useState<string>("");
-  const [productStatus, setProductStatus] = useState<string>("draft");
-  const [productCategory, setProductCategory] = useState<number | null>(null);
-  const [productTags, setProductTags] = useState<number[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [statuses, setStatuses] = useState<string[]>([]);
+interface ProductFormProps {
+  product?: Product | null;
+  categories: Category[];
+  tags: Tag[];
+  statuses: string[];
+  onSave: (productData: any) => Promise<void>;
+}
+
+export default function ProductForm({ product, categories, tags, statuses, onSave }: ProductFormProps) {
+  const [productImages, setProductImages] = useState<string[]>(product?.images || []);
+  const [productName, setProductName] = useState<string>(product?.name || "");
+  const [productDescription, setProductDescription] = useState<string>(product?.description || "");
+  const [productPrice, setProductPrice] = useState<number>(product?.price || 0);
+  const [productStock, setProductStock] = useState<number>(product?.stock || 0);
+  const [productSKU, setProductSKU] = useState<string>(product?.sku || "");
+  const [productStatus, setProductStatus] = useState<string>(product?.status || "DRAFT");
+  const [productCategory, setProductCategory] = useState<number | null>(product?.categoryId || null);
+  const [productTags, setProductTags] = useState<number[]>(product?.tags.map(tag => tag.id) || []);
 
   useEffect(() => {
-    setProductImages([
-      "/placeholder.png",
-      "/placeholder.png",
-      "/placeholder.png",
-    ]);
-
-    const fetchProductData = async () => {
-      try {
-        const response = await fetch("/api/product-data");
-        const data = await response.json();
-
-        setCategories(data.categories || []);
-        setTags(data.tags || []);
-        setStatuses(data.statuses || []);
-      } catch (error) {
-        console.error("Error fetching product data:", error);
-      }
-    };
-
-    fetchProductData();
-  }, []);
+    if (!product) {
+      setProductImages(["/placeholder.png", "/placeholder.png", "/placeholder.png"]);
+    }
+  }, [product]);
 
   const handleSaveProduct = async () => {
-    try {
-      const body = JSON.stringify({
-        name: productName,
-        description: productDescription,
-        price: productPrice,
-        stock: productStock,
-        sku: productSKU,
-        status: productStatus.toUpperCase(), // Convert status to uppercase
-        categories: productCategory ? [productCategory] : [],
-        tags: productTags,
-      });
-  
-      console.log('Request body:', body); // Add logging
-  
-      const response = await fetch("/api/products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body,
-      });
-  
-      if (!response.ok) {
-        const errorDetails = await response.json(); // Capture error details
-        console.error("Failed to save product:", errorDetails);
-        throw new Error("Failed to save product");
-      }
-  
-      const newProduct = await response.json();
-      console.log("Product saved successfully:", newProduct);
-    } catch (error) {
-      console.error("Error saving product:", error);
-    }
+    const productData = {
+      name: productName,
+      description: productDescription,
+      price: productPrice,
+      stock: productStock,
+      sku: productSKU,
+      status: productStatus.toUpperCase(),
+      categories: productCategory ? [productCategory] : [],
+      tags: productTags,
+    };
+
+    await onSave(productData);
   };
-  
+
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
@@ -129,10 +95,10 @@ export default function NewProduct() {
                 <span className="sr-only">Back</span>
               </Button>
               <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-                Pro Controller
+                {product ? product.name : "New Product"}
               </h1>
               <Badge variant="outline" className="ml-auto sm:ml-0">
-                In stock
+                {product ? product.status : "In stock"}
               </Badge>
               <div className="hidden items-center gap-2 md:ml-auto md:flex">
                 <Button variant="outline" size="sm">
@@ -149,7 +115,7 @@ export default function NewProduct() {
                   <CardHeader>
                     <CardTitle>Product Details</CardTitle>
                     <CardDescription>
-                      Lipsum dolor sit amet, consectetur adipiscing elit
+                      {product ? "Edit the product details below." : "Enter the product details below."}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -182,7 +148,7 @@ export default function NewProduct() {
                   <CardHeader>
                     <CardTitle>Stock</CardTitle>
                     <CardDescription>
-                      Lipsum dolor sit amet, consectetur adipiscing elit
+                      Manage stock and pricing information.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -266,6 +232,7 @@ export default function NewProduct() {
                           onValueChange={(value) =>
                             setProductCategory(Number(value))
                           }
+                          value={productCategory?.toString() || ""}
                         >
                           <SelectTrigger
                             id="category"
@@ -323,6 +290,7 @@ export default function NewProduct() {
                         <Label htmlFor="status">Status</Label>
                         <Select
                           onValueChange={(value) => setProductStatus(value.toUpperCase())} // Convert to uppercase
+                          value={productStatus}
                         >
                           <SelectTrigger id="status" aria-label="Select status">
                             <SelectValue placeholder="Select status" />

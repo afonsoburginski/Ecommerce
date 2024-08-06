@@ -18,7 +18,7 @@ export default function Products() {
   const router = useRouter();
 
   const handleAddProduct = () => {
-    router.push("/products/NewProduct");
+    router.push("/products/resgister");
   };
 
   return (

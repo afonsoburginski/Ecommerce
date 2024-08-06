@@ -1,7 +1,6 @@
 // components/ProductTable.tsx
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MoreHorizontal } from "lucide-react";
@@ -30,27 +29,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useProducts } from "@/contexts/ProductContext";
 
 const ProductTable = ({ status }) => {
-  const [products, setProducts] = useState([]);
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("/api/products");
-        if (!response.ok) {
-          throw new Error("Failed to fetch products");
-        }
-        const data = await response.json();
-        setProducts(data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
-
-    fetchProducts();
-  }, []);
+  const { products } = useProducts();
 
   const filteredProducts = products.filter(
     (product) => product.status.toLowerCase() === status
@@ -88,6 +71,10 @@ const ProductTable = ({ status }) => {
               <TableHead>Status</TableHead>
               <TableHead className="hidden md:table-cell">Price</TableHead>
               <TableHead className="hidden md:table-cell">Stock</TableHead>
+              <TableHead className="hidden md:table-cell">SKU</TableHead>
+              <TableHead className="hidden md:table-cell">Description</TableHead>
+              <TableHead className="hidden md:table-cell">Categories</TableHead>
+              <TableHead className="hidden md:table-cell">Tags</TableHead>
               <TableHead className="hidden md:table-cell">Created at</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
@@ -117,6 +104,22 @@ const ProductTable = ({ status }) => {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {product.stock}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {product.sku}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {product.description}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {product.categories.map((category) => category.name).join(", ")}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {product.tags.map((tag) => (
+                    <Badge key={tag.id} variant="default" className="mr-1">
+                      {tag.name}
+                    </Badge>
+                  ))}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {new Date(product.createdAt).toLocaleString()}

@@ -1,20 +1,41 @@
-// src/app/api/products/route.ts
+// src/app/api/products/[productId]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// Handler para obter todos os produtos
-export async function GET() {
+export async function GET(req: Request, { params }: { params: { productId: string } }) {
+  const { productId } = params;
+
+  if (!productId) {
+    return NextResponse.json(
+      { error: 'Product ID is required' },
+      { status: 400 }
+    );
+  }
+
   try {
-    const products = await prisma.product.findMany({
+    const product = await prisma.product.findUnique({
+      where: {
+        id: Number(productId),
+      },
       include: {
         categories: true,
         tags: true,
       },
     });
 
-    return NextResponse.json(products, { status: 200 });
+    if (!product) {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+
+    // Fetch statuses (assuming you have a table or logic to get available statuses)
+    const statuses = ['ACTIVE', 'DRAFT', 'ARCHIVED'];
+
+    return NextResponse.json({ product, statuses }, { status: 200 });
   } catch (error) {
-    console.error('Erro ao buscar produtos:', error.message, error.stack);
+    console.error('Erro ao buscar produto:', error.message, error.stack);
     return NextResponse.json(
       { error: 'Erro Interno do Servidor', details: error.message },
       { status: 500 }
