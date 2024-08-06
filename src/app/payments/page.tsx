@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import DataTable from "@/components/DataTable/DataTable"; // Import the DataTable component
 
 // Dados de exemplo simulando informações do Stripe
 const stripeAccount = {
@@ -38,14 +39,7 @@ const stripeAccount = {
   ],
 };
 
-const transactions = Array.from({ length: 20 }, (_, i) => ({
-  id: `txn_${i}`,
-  customer: `Customer ${i + 1}`,
-  amount: `$${(Math.random() * 100).toFixed(2)}`,
-  status: i % 3 === 0 ? "Completed" : i % 3 === 1 ? "Pending" : "Failed",
-  date: `2024-08-${String(i + 1).padStart(2, "0")}`,
-}));
-
+// Utilize DataTable para transações
 export default function Payments() {
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
@@ -117,45 +111,7 @@ export default function Payments() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <Table className="min-w-full">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>
-                          <span className="sr-only">Actions</span>
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {transactions.map((transaction) => (
-                        <TableRow key={transaction.id}>
-                          <TableCell>{transaction.customer}</TableCell>
-                          <TableCell>{transaction.amount}</TableCell>
-                          <TableCell>
-                            <Badge variant={
-                              transaction.status === "Completed"
-                                ? "success"
-                                : transaction.status === "Pending"
-                                ? "warning"
-                                : "destructive"
-                            }>
-                              {transaction.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{transaction.date}</TableCell>
-                          <TableCell>
-                            <Button size="icon" variant="ghost">
-                              <MoreVertical className="h-4 w-4" />
-                              <span className="sr-only">View details</span>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <DataTable /> {/* Use the DataTable component here */}
                 </div>
               </CardContent>
             </Card>

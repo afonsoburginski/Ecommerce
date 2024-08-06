@@ -1,5 +1,8 @@
+// components/ProductTable.tsx
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -28,75 +31,38 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const products = [
-  {
-    name: "Laser Lemonade Machine",
-    status: "Draft",
-    price: "$499.99",
-    totalSales: 25,
-    createdAt: "2023-07-12 10:42 AM",
-    imageSrc: "/placeholder.svg",
-    variant: "outline",
-  },
-  {
-    name: "Hypernova Headphones",
-    status: "Active",
-    price: "$129.99",
-    totalSales: 100,
-    createdAt: "2023-10-18 03:21 PM",
-    imageSrc: "/placeholder.svg",
-    variant: "outline",
-  },
-  {
-    name: "AeroGlow Desk Lamp",
-    status: "Active",
-    price: "$39.99",
-    totalSales: 50,
-    createdAt: "2023-11-29 08:15 AM",
-    imageSrc: "/placeholder.svg",
-    variant: "outline",
-  },
-  {
-    name: "TechTonic Energy Drink",
-    status: "Draft",
-    price: "$2.99",
-    totalSales: 0,
-    createdAt: "2023-12-25 11:59 PM",
-    imageSrc: "/placeholder.svg",
-    variant: "secondary",
-  },
-  {
-    name: "Gamer Gear Pro Controller",
-    status: "Active",
-    price: "$59.99",
-    totalSales: 75,
-    createdAt: "2024-01-01 12:00 AM",
-    imageSrc: "/placeholder.svg",
-    variant: "outline",
-  },
-  {
-    name: "Luminous VR Headset",
-    status: "Archived",
-    price: "$199.99",
-    totalSales: 30,
-    createdAt: "2024-02-14 02:14 PM",
-    imageSrc: "/placeholder.svg",
-    variant: "outline",
-  },
-];
-
 const ProductTable = ({ status }) => {
+  const [products, setProducts] = useState([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("/api/products");
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const filteredProducts = products.filter(
     (product) => product.status.toLowerCase() === status
   );
 
   const getBadgeVariant = (status) => {
     switch (status) {
-      case "Active":
+      case "ACTIVE":
         return "success";
-      case "Draft":
+      case "DRAFT":
         return "warning";
-      case "Archived":
+      case "ARCHIVED":
         return "warning";
       default:
         return "outline";
@@ -121,7 +87,7 @@ const ProductTable = ({ status }) => {
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="hidden md:table-cell">Price</TableHead>
-              <TableHead className="hidden md:table-cell">Total Sales</TableHead>
+              <TableHead className="hidden md:table-cell">Stock</TableHead>
               <TableHead className="hidden md:table-cell">Created at</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
@@ -129,14 +95,14 @@ const ProductTable = ({ status }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProducts.map((product, index) => (
-              <TableRow key={index}>
+            {filteredProducts.map((product) => (
+              <TableRow key={product.id}>
                 <TableCell className="hidden sm:table-cell">
                   <Image
                     alt="Product image"
                     className="aspect-square rounded-md object-cover"
                     height="64"
-                    src={product.imageSrc}
+                    src="/placeholder.png"
                     width="64"
                   />
                 </TableCell>
@@ -147,13 +113,13 @@ const ProductTable = ({ status }) => {
                   </Badge>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {product.price}
+                  {product.price.toFixed(2)}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {product.totalSales}
+                  {product.stock}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {product.createdAt}
+                  {new Date(product.createdAt).toLocaleString()}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -165,7 +131,11 @@ const ProductTable = ({ status }) => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/products/EditProduct/${product.id}`)}
+                      >
+                        Edit
+                      </DropdownMenuItem>
                       <DropdownMenuItem>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

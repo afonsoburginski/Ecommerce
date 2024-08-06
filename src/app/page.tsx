@@ -22,7 +22,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import Chart from "@/components/BarChart"
-import DataTable from "@/components/DataTable"
+import DataTable from "@/components/DataTable/DataTable"
 
 const customers = [
   {

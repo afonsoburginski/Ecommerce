@@ -29,9 +29,9 @@ model Product {
   price       Float
   stock       Int
   sku         String     @unique
-  categories  Category[] @relation(references: [id])
+  categories  Category[]
   orderItems  OrderItem[]
-  tags        Tag[]      @relation(references: [id])
+  tags        Tag[]     
   status      ProductStatus
   createdAt   DateTime   @default(now())
 }
@@ -56,7 +56,7 @@ model Order {
   userId        Int
   orderItems    OrderItem[]
   transaction   Transaction?   @relation(fields: [transactionId], references: [id])
-  transactionId Int?
+  transactionId Int?           @unique
 }
 
 model OrderItem {
@@ -75,6 +75,7 @@ model Transaction {
   amount      Float
   status      String
   createdAt   DateTime @default(now())
+  order       Order?
 }
 
 model Tag {

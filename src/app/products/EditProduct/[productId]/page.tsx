@@ -1,13 +1,10 @@
+// src/app/products/EditProduct/[productId]/page.tsx
 "use client";
 
-import Image from "next/image";
+import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  ChevronLeft,
-  PlusCircle,
-  Upload,
-} from "lucide-react";
-
+import { ChevronLeft, PlusCircle, Upload } from "lucide-react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,39 +39,77 @@ import {
 } from "@/components/ui/toggle-group";
 
 export default function EditProduct() {
-  // Dummy data, fetched dynamically in useEffect for demonstration
-  const [productImages, setProductImages] = useState([]);
+  const [product, setProduct] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const { productId } = useParams();
+  const router = useRouter();
 
   useEffect(() => {
-    // Fetch or generate data only on the client-side
-    setProductImages([
-      "/placeholder.svg",
-      "/placeholder.svg",
-      "/placeholder.svg",
-    ]);
-  }, []);
+    const fetchProductData = async () => {
+      try {
+        // Fetch product details
+        const productResponse = await fetch(`/api/products/${productId}`);
+        if (!productResponse.ok) {
+          throw new Error("Failed to fetch product");
+        }
+        const productData = await productResponse.json();
+        setProduct(productData);
+        setProductImages(productData.images || ["/placeholder.png"]);
 
-  return (
+        // Fetch categories, tags, and statuses
+        const metaResponse = await fetch("/api/product-data");
+        if (!metaResponse.ok) {
+          throw new Error("Failed to fetch product metadata");
+        }
+        const { categories, tags, statuses } = await metaResponse.json();
+        setCategories(categories);
+        setTags(tags);
+        setStatuses(statuses);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    if (productId) {
+      fetchProductData();
+    }
+  }, [productId]);
+
+  const handleSaveProduct = async () => {
+    // Logic to save the updated product details
+  };
+
+  return product ? (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <div className="mx-auto grid flex-1 auto-rows-max gap-4">
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" className="h-7 w-7">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => router.back()}
+              >
                 <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
               </Button>
               <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-                Pro Controller
+                {product.name}
               </h1>
               <Badge variant="outline" className="ml-auto sm:ml-0">
-                In stock
+                {product.status}
               </Badge>
               <div className="hidden items-center gap-2 md:ml-auto md:flex">
                 <Button variant="outline" size="sm">
                   Discard
                 </Button>
-                <Button size="sm">Save Product</Button>
+                <Button size="sm" onClick={handleSaveProduct}>
+                  Save Product
+                </Button>
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
@@ -83,7 +118,7 @@ export default function EditProduct() {
                   <CardHeader>
                     <CardTitle>Product Details</CardTitle>
                     <CardDescription>
-                      Lipsum dolor sit amet, consectetur adipiscing elit
+                      Edit the product details below.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -94,14 +129,23 @@ export default function EditProduct() {
                           id="name"
                           type="text"
                           className="w-full"
-                          defaultValue="Gamer Gear Pro Controller"
+                          value={product.name}
+                          onChange={(e) =>
+                            setProduct({ ...product, name: e.target.value })
+                          }
                         />
                       </div>
                       <div className="grid gap-3">
                         <Label htmlFor="description">Description</Label>
                         <Textarea
                           id="description"
-                          defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl nec ultricies ultricies, nunc nisl ultricies nunc, nec ultricies nunc nisl nec nunc."
+                          value={product.description}
+                          onChange={(e) =>
+                            setProduct({
+                              ...product,
+                              description: e.target.value,
+                            })
+                          }
                           className="min-h-32"
                         />
                       </div>
@@ -112,7 +156,7 @@ export default function EditProduct() {
                   <CardHeader>
                     <CardTitle>Stock</CardTitle>
                     <CardDescription>
-                      Lipsum dolor sit amet, consectetur adipiscing elit
+                      Manage stock and pricing information.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -128,7 +172,7 @@ export default function EditProduct() {
                       <TableBody>
                         <TableRow>
                           <TableCell className="font-semibold">
-                            GGPC-001
+                            {product.sku}
                           </TableCell>
                           <TableCell>
                             <Label htmlFor="stock-1" className="sr-only">
@@ -137,7 +181,13 @@ export default function EditProduct() {
                             <Input
                               id="stock-1"
                               type="number"
-                              defaultValue="100"
+                              value={product.stock}
+                              onChange={(e) =>
+                                setProduct({
+                                  ...product,
+                                  stock: Number(e.target.value),
+                                })
+                              }
                             />
                           </TableCell>
                           <TableCell>
@@ -147,79 +197,13 @@ export default function EditProduct() {
                             <Input
                               id="price-1"
                               type="number"
-                              defaultValue="99.99"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <ToggleGroup
-                              type="single"
-                              defaultValue="s"
-                              variant="outline"
-                            >
-                              <ToggleGroupItem value="s">S</ToggleGroupItem>
-                              <ToggleGroupItem value="m">M</ToggleGroupItem>
-                              <ToggleGroupItem value="l">L</ToggleGroupItem>
-                            </ToggleGroup>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-semibold">
-                            GGPC-002
-                          </TableCell>
-                          <TableCell>
-                            <Label htmlFor="stock-2" className="sr-only">
-                              Stock
-                            </Label>
-                            <Input
-                              id="stock-2"
-                              type="number"
-                              defaultValue="143"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Label htmlFor="price-2" className="sr-only">
-                              Price
-                            </Label>
-                            <Input
-                              id="price-2"
-                              type="number"
-                              defaultValue="99.99"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <ToggleGroup
-                              type="single"
-                              defaultValue="m"
-                              variant="outline"
-                            >
-                              <ToggleGroupItem value="s">S</ToggleGroupItem>
-                              <ToggleGroupItem value="m">M</ToggleGroupItem>
-                              <ToggleGroupItem value="l">L</ToggleGroupItem>
-                            </ToggleGroup>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-semibold">
-                            GGPC-003
-                          </TableCell>
-                          <TableCell>
-                            <Label htmlFor="stock-3" className="sr-only">
-                              Stock
-                            </Label>
-                            <Input
-                              id="stock-3"
-                              type="number"
-                              defaultValue="32"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Label htmlFor="price-3" className="sr-only">
-                              Price
-                            </Label>
-                            <Input
-                              id="price-3"
-                              type="number"
-                              defaultValue="99.99"
+                              value={product.price}
+                              onChange={(e) =>
+                                setProduct({
+                                  ...product,
+                                  price: Number(e.target.value),
+                                })
+                              }
                             />
                           </TableCell>
                           <TableCell>
@@ -252,7 +236,15 @@ export default function EditProduct() {
                     <div className="grid gap-6 sm:grid-cols-3">
                       <div className="grid gap-3">
                         <Label htmlFor="category">Category</Label>
-                        <Select>
+                        <Select
+                          onValueChange={(value) =>
+                            setProduct({
+                              ...product,
+                              categoryId: Number(value),
+                            })
+                          }
+                          value={product.categoryId?.toString() || ""}
+                        >
                           <SelectTrigger
                             id="category"
                             aria-label="Select category"
@@ -260,13 +252,14 @@ export default function EditProduct() {
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="clothing">Clothing</SelectItem>
-                            <SelectItem value="electronics">
-                              Electronics
-                            </SelectItem>
-                            <SelectItem value="accessories">
-                              Accessories
-                            </SelectItem>
+                            {categories.map((category) => (
+                              <SelectItem
+                                key={category.id}
+                                value={category.id.toString()}
+                              >
+                                {category.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -303,14 +296,25 @@ export default function EditProduct() {
                     <div className="grid gap-6">
                       <div className="grid gap-3">
                         <Label htmlFor="status">Status</Label>
-                        <Select>
+                        <Select
+                          onValueChange={(value) =>
+                            setProduct({
+                              ...product,
+                              status: value.toUpperCase(),
+                            })
+                          }
+                          value={product.status}
+                        >
                           <SelectTrigger id="status" aria-label="Select status">
                             <SelectValue placeholder="Select status" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="draft">Draft</SelectItem>
-                            <SelectItem value="published">Active</SelectItem>
-                            <SelectItem value="archived">Archived</SelectItem>
+                            {statuses.map((status) => (
+                              <SelectItem key={status} value={status}>
+                                {status.charAt(0).toUpperCase() +
+                                  status.slice(1).toLowerCase()}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -329,9 +333,10 @@ export default function EditProduct() {
                       <Image
                         alt="Product image"
                         className="aspect-square w-full rounded-md object-cover"
-                        height="300"
-                        src="/placeholder.svg"
-                        width="300"
+                        height={300}
+                        src="/placeholder.png"
+                        width={300}
+                        layout="responsive"
                       />
                       <div className="grid grid-cols-3 gap-2">
                         {productImages.map((src, index) => (
@@ -339,9 +344,10 @@ export default function EditProduct() {
                             <Image
                               alt={`Product image ${index + 1}`}
                               className="aspect-square w-full rounded-md object-cover"
-                              height="84"
+                              height={84}
                               src={src}
-                              width="84"
+                              width={84}
+                              layout="responsive"
                             />
                           </button>
                         ))}
@@ -373,11 +379,13 @@ export default function EditProduct() {
               <Button variant="outline" size="sm">
                 Discard
               </Button>
-              <Button size="sm">Save Product</Button>
+              <Button size="sm" onClick={handleSaveProduct}>
+                Save Product
+              </Button>
             </div>
           </div>
         </main>
       </div>
     </div>
-  );
+  ) : null;
 }
