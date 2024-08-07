@@ -1,3 +1,5 @@
+// src/components/product/ProductForm.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,6 +18,7 @@ interface ProductFormProps {
   categories: Category[];
   tags: Tag[];
   statuses: string[];
+  colors: Color[];
   onSave: (productData: any) => Promise<void>;
 }
 
@@ -24,13 +27,30 @@ export default function ProductForm({
   categories,
   tags,
   statuses,
+  colors,
   onSave,
 }: ProductFormProps) {
-  const [productData, setProductData] = useState<Product | null>(null);
+  const [productData, setProductData] = useState<Product>({
+    name: product?.name || "New Product",
+    description: product?.description || "",
+    price: product?.price || 0,
+    stock: product?.stock || 0,
+    status: product?.status || "DRAFT",
+    categoryId: product?.categoryId || null,
+    categories: product?.categories?.map((category) => category.id) || [],
+    tags: product?.tags?.map((tag) => tag.id) || [],
+    images: product?.images || [],
+    variants: product?.variants || [], // Initialize variants
+  });
 
   useEffect(() => {
     if (product) {
-      setProductData(product);
+      setProductData({
+        ...product,
+        categories: product.categories?.map((category) => category.id) || [],
+        tags: product.tags?.map((tag) => tag.id) || [],
+        variants: product.variants || [],
+      });
     }
   }, [product]);
 
@@ -45,8 +65,6 @@ export default function ProductForm({
   const handleBack = () => {
     router.back();
   };
-
-  if (!productData) return <div>Loading product data...</div>;
 
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
@@ -78,6 +96,7 @@ export default function ProductForm({
                 </Button>
               </div>
             </div>
+
             <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
               <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
                 <ProductDetails
@@ -87,6 +106,7 @@ export default function ProductForm({
                 <ProductStock
                   productData={productData}
                   setProductData={setProductData}
+                  colors={colors} // Pass colors to ProductStock
                 />
                 <ProductCategory
                   categories={categories}
@@ -101,7 +121,7 @@ export default function ProductForm({
                   productData={productData}
                   setProductData={setProductData}
                 />
-                <ProductImages /> {/* Mantenha o componente ProductImages, sem passar dados */}
+                <ProductImages />
               </div>
             </div>
             <div className="flex items-center justify-center gap-2 md:hidden">

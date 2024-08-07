@@ -1,7 +1,16 @@
+"use client";
+
 import { Dispatch, SetStateAction } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductCategoryProps {
   categories: Category[];
@@ -10,65 +19,101 @@ interface ProductCategoryProps {
   setProductData: Dispatch<SetStateAction<Product>>;
 }
 
-export default function ProductCategory({ categories, tags, productData, setProductData }: ProductCategoryProps) {
+export default function ProductCategory({
+  categories,
+  tags,
+  productData,
+  setProductData,
+}: ProductCategoryProps) {
+  const handleTagSelection = (tagId: string) => {
+    const id = Number(tagId);
+    if (!productData.tags.includes(id)) {
+      setProductData({ ...productData, tags: [...productData.tags, id] });
+    }
+  };
+
+  const handleCategorySelection = (categoryId: string) => {
+    const id = Number(categoryId);
+    if (!productData.categories.includes(id)) {
+      setProductData({ ...productData, categories: [...productData.categories, id] });
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Product Category</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6 sm:grid-cols-3">
-          <div className="grid gap-3">
+        <div className="flex flex-wrap gap-6">
+          <div className="flex-1 grid gap-3">
             <Label htmlFor="category">Category</Label>
-            <Select
-              onValueChange={(value) =>
-                setProductData({ ...productData, categoryId: Number(value) })
-              }
-              value={productData.categoryId?.toString() || ""}
-            >
-              <SelectTrigger
-                id="category"
-                aria-label="Select category"
+            <div className="flex items-center gap-2">
+              <Select
+                onValueChange={handleCategorySelection}
               >
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.length > 0 && categories.map((category) => (
-                  <SelectItem
-                    key={category.id}
-                    value={category.id.toString()}
-                  >
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger id="category" aria-label="Select category">
+                  <SelectValue placeholder="Select categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.length > 0 &&
+                    categories.map((category) => (
+                      <SelectItem
+                        key={category.id}
+                        value={category.id.toString()}
+                      >
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="grid gap-3">
+          <div className="flex-1 grid gap-3">
             <Label htmlFor="tags">Tags</Label>
-            <Select
-              onValueChange={(value) =>
-                setProductData({
-                  ...productData,
-                  tags: [...productData.tags, { id: Number(value), name: tags.find(tag => tag.id === Number(value))?.name || "" }]
-                })
-              }
-              multiple
-            >
-              <SelectTrigger id="tags" aria-label="Select tags">
-                <SelectValue placeholder="Select tags" />
-              </SelectTrigger>
-              <SelectContent>
-                {tags.length > 0 && tags.map((tag) => (
-                  <SelectItem
-                    key={tag.id}
-                    value={tag.id.toString()}
-                  >
-                    {tag.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Select onValueChange={handleTagSelection}>
+                <SelectTrigger id="tags" aria-label="Select tags">
+                  <SelectValue placeholder="Select tags" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tags.length > 0 &&
+                    tags.map((tag) => (
+                      <SelectItem key={tag.id} value={tag.id.toString()}>
+                        {tag.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex-1 grid gap-3 border-l pl-4">
+            <div className="flex items-center gap-2">
+              <Label className="mr-2">Categories:</Label>
+              {productData.categories.map((categoryId) => {
+                const category = categories.find((category) => category.id === categoryId);
+                return (
+                  category && (
+                    <Badge key={category.id} variant="default">
+                      {category.name}
+                    </Badge>
+                  )
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap items-center gap-1">
+              <Label className="mr-2">Tags:</Label>
+              {productData.tags.map((tagId) => {
+                const tag = tags.find((tag) => tag.id === tagId);
+                return (
+                  tag && (
+                    <Badge key={tag.id} variant="default">
+                      {tag.name}
+                    </Badge>
+                  )
+                );
+              })}
+            </div>
           </div>
         </div>
       </CardContent>

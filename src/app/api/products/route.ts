@@ -8,6 +8,7 @@ export async function GET() {
       include: {
         categories: true,
         tags: true,
+        variants: true, // Include variants here
       },
     });
 
@@ -24,10 +25,20 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, price, stock, sku, categories, tags, status } = body;
+    const { name, description, price, stock, categories, tags, status, variants } = body;
 
-    if (!name || !description || !price || !stock || !sku || !status) {
+    // Validate required fields for the product
+    if (!name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Ensure variants are valid
+    if (variants && variants.length > 0) {
+      for (const variant of variants) {
+        if (!variant.sku || typeof variant.stock !== 'number') {
+          return NextResponse.json({ error: 'Missing variant fields' }, { status: 400 });
+        }
+      }
     }
 
     const newProduct = await prisma.product.create({
@@ -36,13 +47,20 @@ export async function POST(request: Request) {
         description,
         price,
         stock,
-        sku,
         status,
         categories: {
           connect: categories?.map((id: number) => ({ id })),
         },
         tags: {
           connect: tags?.map((id: number) => ({ id })),
+        },
+        variants: {
+          create: variants.map((variant: Variant) => ({
+            sku: variant.sku,
+            stock: variant.stock,
+            size: variant.size,
+            color: variant.color,
+          })),
         },
       },
     });

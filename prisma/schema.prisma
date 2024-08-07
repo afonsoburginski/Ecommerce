@@ -1,3 +1,5 @@
+// schema.prisma
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -28,18 +30,34 @@ model Product {
   description String
   price       Float
   stock       Int
-  sku         String     @unique
   categories  Category[]
   orderItems  OrderItem[]
-  tags        Tag[]     
+  tags        Tag[]
   status      ProductStatus
   createdAt   DateTime   @default(now())
+  variants    Variant[]  // Relationship with variants
 }
 
 enum ProductStatus {
   DRAFT
   ACTIVE
   ARCHIVED
+}
+
+model Variant {
+  id        Int     @id @default(autoincrement())
+  sku       String  @unique
+  stock     Int
+  size      String?
+  color     String?
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+}
+
+model Color {
+  id       Int      @id @default(autoincrement())
+  name     String   @unique
+  hexCode  String
 }
 
 model Category {

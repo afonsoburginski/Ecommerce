@@ -23,11 +23,31 @@ CREATE TABLE "Product" (
     "description" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "stock" INTEGER NOT NULL,
-    "sku" TEXT NOT NULL,
     "status" "ProductStatus" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Variant" (
+    "id" SERIAL NOT NULL,
+    "sku" TEXT NOT NULL,
+    "stock" INTEGER NOT NULL,
+    "size" TEXT,
+    "color" TEXT,
+    "productId" INTEGER NOT NULL,
+
+    CONSTRAINT "Variant_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Color" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "hexCode" TEXT NOT NULL,
+
+    CONSTRAINT "Color_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -95,7 +115,10 @@ CREATE TABLE "_CategoryToProduct" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Product_sku_key" ON "Product"("sku");
+CREATE UNIQUE INDEX "Variant_sku_key" ON "Variant"("sku");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Color_name_key" ON "Color"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Order_transactionId_key" ON "Order"("transactionId");
@@ -114,6 +137,9 @@ CREATE UNIQUE INDEX "_CategoryToProduct_AB_unique" ON "_CategoryToProduct"("A", 
 
 -- CreateIndex
 CREATE INDEX "_CategoryToProduct_B_index" ON "_CategoryToProduct"("B");
+
+-- AddForeignKey
+ALTER TABLE "Variant" ADD CONSTRAINT "Variant_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

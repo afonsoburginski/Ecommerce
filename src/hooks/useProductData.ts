@@ -43,7 +43,7 @@ export const useProductData = (productId?: string): UseProductDataResult => {
             throw new Error("Failed to fetch product");
           }
           const productData = await productResponse.json();
-          setProduct(productData);
+          setProduct(productData.product); // Ensure product data is set correctly
         }
       } catch (err) {
         setError(err as Error);

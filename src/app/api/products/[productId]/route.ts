@@ -20,6 +20,7 @@ export async function GET(req: Request, { params }: { params: { productId: strin
       include: {
         categories: true,
         tags: true,
+        variants: true, // Include variants
       },
     });
 
@@ -30,7 +31,6 @@ export async function GET(req: Request, { params }: { params: { productId: strin
       );
     }
 
-    // Fetch statuses (assuming you have a table or logic to get available statuses)
     const statuses = ['ACTIVE', 'DRAFT', 'ARCHIVED'];
 
     return NextResponse.json({ product, statuses }, { status: 200 });

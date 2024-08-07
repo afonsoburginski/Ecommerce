@@ -34,19 +34,13 @@ export default function EditProduct() {
     }
   };
 
-  if (dataLoading || mutationLoading) return <div>Loading...</div>;
-  if (dataError) return <div>Error: {dataError.message}</div>;
-  if (mutationError) return <div>Error: {mutationError}</div>;
-
   return (
-    product && (
-      <ProductForm
-        product={product}
-        categories={categories}
-        tags={tags}
-        statuses={["DRAFT", "ACTIVE", "ARCHIVED"]}
-        onSave={handleSaveProduct}
-      />
-    )
+    <ProductForm
+      product={product || {}}
+      categories={categories}
+      tags={tags}
+      statuses={["DRAFT", "ACTIVE", "ARCHIVED"]}
+      onSave={handleSaveProduct}
+    />
   );
 }
