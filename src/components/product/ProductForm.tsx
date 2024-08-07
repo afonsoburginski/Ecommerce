@@ -8,7 +8,7 @@ import ProductDetails from "@/components/product/ProductDetails";
 import ProductStock from "@/components/product/ProductStock";
 import ProductCategory from "@/components/product/ProductCategory";
 import ProductStatus from "@/components/product/ProductStatus";
-import ProductImages from "@/components/product/ProductImages"; // Mantenha o componente ProductImages
+import ProductImages from "@/components/product/ProductImages";
 import { useRouter } from "next/navigation";
 
 interface ProductFormProps {

@@ -1,50 +1,50 @@
-// app/EditProduct/[productId]/page.tsx
+// app/products/EditProduct/[productId]/page.tsx
 'use client';
 
-import { useParams } from "next/navigation";
-import { useFetchData } from "@/hooks/useFetchData";
+import { useRouter, useParams } from "next/navigation";
+import { useProductData } from "@/hooks/useProductData";
+import { useProductMutation } from "@/hooks/useProductMutation";
 import ProductForm from "@/components/product/ProductForm";
 
 export default function EditProduct() {
   const { productId } = useParams();
-  const [product, productLoading, productError] = useFetchData<Product>(`/api/products/${productId}`);
-  const [categories] = useFetchData<Category[]>("/api/categories");
-  const [tags] = useFetchData<Tag[]>("/api/tags");
-  const statuses = ["DRAFT", "ACTIVE", "ARCHIVED"];
+  const router = useRouter();
 
-  const handleSaveProduct = async (productData: Product) => {
+  const {
+    product,
+    categories,
+    tags,
+    isLoading: dataLoading,
+    error: dataError,
+  } = useProductData(productId);
+
+  const {
+    isLoading: mutationLoading,
+    error: mutationError,
+    mutate,
+  } = useProductMutation();
+
+  const handleSaveProduct = async (productData: any) => {
     try {
-      const response = await fetch(`/api/products/${productId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(productData),
-      });
-
-      if (!response.ok) {
-        const errorDetails = await response.json();
-        console.error("Failed to update product:", errorDetails);
-        throw new Error("Failed to update product");
-      }
-
-      const updatedProduct = await response.json();
+      const updatedProduct = await mutate(`/products/${productId}`, "PUT", productData);
       console.log("Product updated successfully:", updatedProduct);
+      router.push("/products");
     } catch (error) {
       console.error("Error updating product:", error);
     }
   };
 
-  if (productLoading) return <div>Loading...</div>;
-  if (productError) return <div>Error: {productError.message}</div>;
+  if (dataLoading || mutationLoading) return <div>Loading...</div>;
+  if (dataError) return <div>Error: {dataError.message}</div>;
+  if (mutationError) return <div>Error: {mutationError}</div>;
 
   return (
     product && (
       <ProductForm
         product={product}
-        categories={categories || []}
-        tags={tags || []}
-        statuses={statuses}
+        categories={categories}
+        tags={tags}
+        statuses={["DRAFT", "ACTIVE", "ARCHIVED"]}
         onSave={handleSaveProduct}
       />
     )

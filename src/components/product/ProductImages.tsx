@@ -21,7 +21,7 @@ export default function ProductImages({ productImages = ["/placeholder.png"] }: 
             alt="Product image"
             className="aspect-square w-full rounded-md object-cover"
             height="300"
-            src={productImages[0] ?? "/placeholder.png"} // Valor padrão caso productImages seja undefined
+            src={productImages[0] ?? "/placeholder.png"}
             width="300"
           />
           <div className="grid grid-cols-3 gap-2">
@@ -31,7 +31,7 @@ export default function ProductImages({ productImages = ["/placeholder.png"] }: 
                   alt={`Product image ${index + 1}`}
                   className="aspect-square w-full rounded-md object-cover"
                   height="84"
-                  src={image ?? "/placeholder.png"} // Valor padrão caso image seja undefined
+                  src={image ?? "/placeholder.png"}
                   width="84"
                 />
               </button>

@@ -1,41 +1,43 @@
+// app/products/NewProduct/page.tsx
 'use client';
 
-import { useFetchData } from "@/hooks/useFetchData";
+import { useProductData } from "@/hooks/useProductData";
+import { useProductMutation } from "@/hooks/useProductMutation";
 import ProductForm from "@/components/product/ProductForm";
 
 export default function NewProduct() {
-  const [categories] = useFetchData<Category[]>("/api/categories");
-  const [tags] = useFetchData<Tag[]>("/api/tags");
-  const statuses = ["DRAFT", "ACTIVE", "ARCHIVED"];
+  const {
+    categories,
+    tags,
+    isLoading: dataLoading,
+    error: dataError,
+  } = useProductData();
 
-  const handleSaveProduct = async (productData: Product) => {
+  const {
+    isLoading: mutationLoading,
+    error: mutationError,
+    mutate,
+  } = useProductMutation();
+
+  const handleSaveProduct = async (productData: any) => {
     try {
-      const response = await fetch("/api/products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(productData),
-      });
-
-      if (!response.ok) {
-        const errorDetails = await response.json();
-        console.error("Failed to save product:", errorDetails);
-        throw new Error("Failed to save product");
-      }
-
-      const newProduct = await response.json();
+      const newProduct = await mutate("/products", "POST", productData);
       console.log("Product saved successfully:", newProduct);
+      router.push("/products");
     } catch (error) {
       console.error("Error saving product:", error);
     }
   };
 
+  if (dataLoading || mutationLoading) return <div>Loading...</div>;
+  if (dataError) return <div>Error: {dataError.message}</div>;
+  if (mutationError) return <div>Error: {mutationError}</div>;
+
   return (
     <ProductForm
-      categories={categories || []}
-      tags={tags || []}
-      statuses={statuses}
+      categories={categories}
+      tags={tags}
+      statuses={["DRAFT", "ACTIVE", "ARCHIVED"]}
       onSave={handleSaveProduct}
     />
   );
