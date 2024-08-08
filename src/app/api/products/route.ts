@@ -8,7 +8,7 @@ export async function GET() {
       include: {
         categories: true,
         tags: true,
-        variants: true, // Include variants here
+        variants: true,
       },
     });
 
@@ -27,12 +27,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, description, price, stock, categories, tags, status, variants } = body;
 
-    // Validate required fields for the product
     if (!name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Ensure variants are valid
     if (variants && variants.length > 0) {
       for (const variant of variants) {
         if (!variant.sku || typeof variant.stock !== 'number') {
@@ -74,3 +72,54 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, name, description, price, stock, categories, tags, status, variants } = body;
+
+    if (!id || !name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id: Number(id) },
+      data: {
+        name,
+        description,
+        price,
+        stock,
+        status,
+        categories: {
+          set: categories?.map((id: number) => ({ id })),
+        },
+        tags: {
+          set: tags?.map((id: number) => ({ id })),
+        },
+        variants: {
+          deleteMany: {},
+          create: variants.map((variant: Variant) => ({
+            sku: variant.sku,
+            stock: variant.stock,
+            size: variant.size,
+            color: variant.color,
+          })),
+        },
+      },
+      include: {
+        categories: true,
+        tags: true,
+        variants: true,
+      },
+    });
+
+    return NextResponse.json(updatedProduct, { status: 200 });
+  } catch (error: any) {
+    console.error('Error updating product:', error.message, error.stack);
+    return NextResponse.json(
+      { error: 'Internal Server Error', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+z

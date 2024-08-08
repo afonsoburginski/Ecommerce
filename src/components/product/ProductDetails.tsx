@@ -1,6 +1,6 @@
-// src/components/product/ProductDetails.tsx
+// Example: src/components/product/ProductDetails.tsx
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,11 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({ productData, setProductData }: ProductDetailsProps) {
-  const [priceInput, setPriceInput] = useState<string>(formatPrice(productData.price));
+  const [priceInput, setPriceInput] = useState<string>(formatPrice(productData.price || 0));
+
+  useEffect(() => {
+    setPriceInput(formatPrice(productData.price || 0));
+  }, [productData.price]);
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.replace(/[^\d]/g, '');

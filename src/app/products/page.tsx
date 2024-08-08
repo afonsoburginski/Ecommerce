@@ -14,11 +14,11 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 
 export default function Products() {
-  const [activeTab, setActiveTab] = useState("active");
+  const [activeTab, setActiveTab] = useState("ALL");
   const router = useRouter();
 
   const handleAddProduct = () => {
-    router.push("/products/resgister");
+    router.push("/products/register");
   };
 
   return (
@@ -28,8 +28,9 @@ export default function Products() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="flex items-center">
               <TabsList>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="archived">Archived</TabsTrigger>
+                <TabsTrigger value="ALL">All</TabsTrigger>
+                <TabsTrigger value="ACTIVE">Active</TabsTrigger>
+                <TabsTrigger value="ARCHIVED">Archived</TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
                 <Button size="sm" className="h-8 gap-1" onClick={handleAddProduct}>
@@ -40,11 +41,14 @@ export default function Products() {
                 </Button>
               </div>
             </div>
-            <TabsContent value="active">
-              <ProductTable status="active" />
+            <TabsContent value="ALL">
+              <ProductTable status="ALL" />
             </TabsContent>
-            <TabsContent value="archived">
-              <ProductTable status="archived" />
+            <TabsContent value="ACTIVE">
+              <ProductTable status="ACTIVE" />
+            </TabsContent>
+            <TabsContent value="ARCHIVED">
+              <ProductTable status="ARCHIVED" />
             </TabsContent>
           </Tabs>
         </main>

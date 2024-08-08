@@ -14,11 +14,11 @@ import ProductImages from "@/components/product/ProductImages";
 import { useRouter } from "next/navigation";
 
 interface ProductFormProps {
-  product?: Product | null;
+  product?: Product;
   categories: Category[];
   tags: Tag[];
   statuses: string[];
-  colors: Color[];
+  colors?: Color[];
   onSave: (productData: any) => Promise<void>;
 }
 
@@ -35,12 +35,12 @@ export default function ProductForm({
     description: product?.description || "",
     price: product?.price || 0,
     stock: product?.stock || 0,
-    status: product?.status || "DRAFT",
+    status: product?.status || "ACTIVE",
     categoryId: product?.categoryId || null,
     categories: product?.categories?.map((category) => category.id) || [],
     tags: product?.tags?.map((tag) => tag.id) || [],
     images: product?.images || [],
-    variants: product?.variants || [], // Initialize variants
+    variants: product?.variants || [],
   });
 
   useEffect(() => {

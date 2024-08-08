@@ -1,5 +1,5 @@
-// app/products/EditProduct/[productId]/page.tsx
-'use client';
+// src/app/products/EditProduct/[productId]/page.tsx
+"use client";
 
 import { useRouter, useParams } from "next/navigation";
 import { useProductData } from "@/hooks/useProductData";
@@ -10,36 +10,28 @@ export default function EditProduct() {
   const { productId } = useParams();
   const router = useRouter();
 
-  const {
-    product,
-    categories,
-    tags,
-    isLoading: dataLoading,
-    error: dataError,
-  } = useProductData(productId);
+  const { product, categories, tags, isLoading, error } = useProductData(productId);
+  const { updateProduct } = useProductMutation();
 
-  const {
-    isLoading: mutationLoading,
-    error: mutationError,
-    mutate,
-  } = useProductMutation();
-
-  const handleSaveProduct = async (productData: any) => {
+  const handleSaveProduct = async (productData: Product) => {
     try {
-      const updatedProduct = await mutate(`/products/${productId}`, "PUT", productData);
-      console.log("Product updated successfully:", updatedProduct);
+      // Pass the entire product object including the ID
+      await updateProduct({ ...productData, id: Number(productId) });
       router.push("/products");
     } catch (error) {
       console.error("Error updating product:", error);
     }
   };
 
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading product data.</div>;
+
   return (
     <ProductForm
-      product={product || {}}
+      product={product}
       categories={categories}
       tags={tags}
-      statuses={["DRAFT", "ACTIVE", "ARCHIVED"]}
+      statuses={["ACTIVE", "DRAFT", "ARCHIVED"]}
       onSave={handleSaveProduct}
     />
   );

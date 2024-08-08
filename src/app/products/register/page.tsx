@@ -6,8 +6,6 @@ import { useProductMutation } from "@/hooks/useProductMutation";
 import ProductForm from "@/components/product/ProductForm";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-// Define the structure for a new product
 interface Product {
   name: string;
   description: string;
@@ -43,24 +41,22 @@ export default function NewProduct() {
     mutate,
   } = useProductMutation();
 
-  // Initialize the product data with default values
   const [productData, setProductData] = useState<Product>({
     name: "New Product",
     description: "",
     price: 0,
     stock: 0,
-    status: "DRAFT",
+    status: "ACTIVE",
     categoryId: null,
     categories: [],
     tags: [],
     images: [],
-    variants: [], // Initialize with an empty array for variants
+    variants: [],
   });
 
   const handleSaveProduct = async (productData: Product) => {
     try {
-      const newProduct = await mutate("/products", "POST", productData);
-      console.log("Product saved successfully:", newProduct);
+      await mutate("/products", "POST", productData);
       router.push("/products");
     } catch (error) {
       console.error("Error saving product:", error);
@@ -73,10 +69,10 @@ export default function NewProduct() {
 
   return (
     <ProductForm
-      product={productData} // Pass the initialized product data
+      product={productData}
       categories={categories}
       tags={tags}
-      statuses={["DRAFT", "ACTIVE", "ARCHIVED"]}
+      statuses={["ACTIVE", "DRAFT", "ARCHIVED"]}
       onSave={handleSaveProduct}
     />
   );

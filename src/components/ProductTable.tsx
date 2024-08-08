@@ -1,4 +1,5 @@
-// components/ProductTable.tsx
+// src/components/ProductTable.tsx
+
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -31,22 +32,28 @@ import {
 } from "@/components/ui/table";
 import { useProducts } from "@/contexts/ProductContext";
 
-const ProductTable = ({ status }) => {
+const ProductTable = ({ status }: { status: string }) => {
   const router = useRouter();
-  const { products } = useProducts();
+  const { products, isLoading, isError } = useProducts();
 
-  const filteredProducts = products.filter(
-    (product) => product.status.toLowerCase() === status
-  );
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading products.</div>;
 
-  const getBadgeVariant = (status) => {
-    switch (status) {
+  const normalizedStatus = status.toUpperCase();
+  const filteredProducts = normalizedStatus === "ALL" 
+    ? products 
+    : products.filter((product) => {
+        return product.status.toUpperCase() === normalizedStatus;
+      });  
+
+  const getBadgeVariant = (status: string) => {
+    switch (status.toUpperCase()) {
       case "ACTIVE":
         return "success";
       case "DRAFT":
         return "warning";
       case "ARCHIVED":
-        return "warning";
+        return "outline";
       default:
         return "outline";
     }
@@ -70,8 +77,6 @@ const ProductTable = ({ status }) => {
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="hidden md:table-cell">Price</TableHead>
-              <TableHead className="hidden md:table-cell">Stock</TableHead>
-              <TableHead className="hidden md:table-cell">SKU</TableHead>
               <TableHead className="hidden md:table-cell">Description</TableHead>
               <TableHead className="hidden md:table-cell">Categories</TableHead>
               <TableHead className="hidden md:table-cell">Tags</TableHead>
@@ -103,12 +108,6 @@ const ProductTable = ({ status }) => {
                   {product.price.toFixed(2)}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {product.stock}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {product.sku}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
                   {product.description}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
@@ -135,7 +134,9 @@ const ProductTable = ({ status }) => {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem
-                        onClick={() => router.push(`/products/EditProduct/${product.id}`)}
+                        onClick={() =>
+                          router.push(`/products/EditProduct/${product.id}`)
+                        }
                       >
                         Edit
                       </DropdownMenuItem>

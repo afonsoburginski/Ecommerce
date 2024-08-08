@@ -3,14 +3,12 @@
 import Select, { StylesConfig } from "react-select";
 import chroma from "chroma-js";
 
-// Define the type for color options
 interface ColourOption {
   readonly value: string;
   readonly label: string;
   readonly color: string;
 }
 
-// Expanded list of color options
 const colourOptions: ColourOption[] = [
   { value: "red", label: "Red", color: "#FF5630" },
   { value: "orange", label: "Orange", color: "#FF8B00" },
@@ -30,7 +28,6 @@ const colourOptions: ColourOption[] = [
   { value: "indigo", label: "Indigo", color: "#4B0082" },
 ];
 
-// Styles for the color select component
 const colourStyles: StylesConfig<ColourOption, true> = {
   control: (styles) => ({
     ...styles,
@@ -42,34 +39,29 @@ const colourStyles: StylesConfig<ColourOption, true> = {
   }),
   option: (styles, { data, isDisabled, isFocused, isSelected }) => {
     const color = chroma(data.color);
-    const isWhite = data.color === "#FFFFFF";
     return {
       ...styles,
       backgroundColor: isDisabled
         ? undefined
         : isSelected
-        ? color.css()
+        ? color.alpha(0.8).css()
         : isFocused
-        ? color.alpha(0.3).css() // Less transparent hover background
-        : "hsl(var(--card))", // Darker background for dropdown options
+        ? color.alpha(0.7).css()
+        : "hsl(var(--card))",
       color: isDisabled
         ? "hsl(var(--muted-foreground))"
         : isSelected || isFocused
-        ? isWhite
-          ? "rgba(0, 0, 0, 0.9)" // Darker text for white background
-          : chroma.contrast(color, "white") > 2
-          ? "white"
-          : "black"
-        : isWhite
-        ? "rgba(0, 0, 0, 0.9)" // Darker text for white background
-        : data.color,
+        ? chroma.contrast(color, "black") > 2
+          ? color.darken(3).css()
+          : color.brighten(3).css()
+        : color.css(),
       cursor: isDisabled ? "not-allowed" : "default",
       ":active": {
         ...styles[":active"],
         backgroundColor: !isDisabled
           ? isSelected
             ? color.css()
-            : color.alpha(0.4).css() // More visible active state
+            : color.alpha(0.8).css()
           : undefined,
       },
     };
@@ -93,7 +85,7 @@ const colourStyles: StylesConfig<ColourOption, true> = {
       color: "white",
     },
   }),
-  menuPortal: (styles) => ({ ...styles, zIndex: 9999 }), // Ensure the dropdown is above other components
+  menuPortal: (styles) => ({ ...styles, zIndex: 9999 }),
 };
 
 interface ColorSelectProps {
@@ -111,7 +103,7 @@ const ColorSelect: React.FC<ColorSelectProps> = ({ value, onChange }) => {
       )}
       styles={colourStyles}
       placeholder="Select Colors"
-      menuPortalTarget={document.body} // Attach the dropdown to the body
+      menuPortalTarget={document.body}
       onChange={(selectedOptions) =>
         onChange(selectedOptions.map((option) => option.value).join(", "))
       }

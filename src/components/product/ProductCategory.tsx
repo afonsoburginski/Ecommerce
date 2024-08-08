@@ -1,6 +1,7 @@
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
+import { X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -39,6 +40,20 @@ export default function ProductCategory({
     }
   };
 
+  const handleRemoveCategory = (categoryId: number) => {
+    setProductData({
+      ...productData,
+      categories: productData.categories.filter((id) => id !== categoryId),
+    });
+  };
+
+  const handleRemoveTag = (tagId: number) => {
+    setProductData({
+      ...productData,
+      tags: productData.tags.filter((id) => id !== tagId),
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -49,9 +64,7 @@ export default function ProductCategory({
           <div className="flex-1 grid gap-3">
             <Label htmlFor="category">Category</Label>
             <div className="flex items-center gap-2">
-              <Select
-                onValueChange={handleCategorySelection}
-              >
+              <Select onValueChange={handleCategorySelection}>
                 <SelectTrigger id="category" aria-label="Select category">
                   <SelectValue placeholder="Select categories" />
                 </SelectTrigger>
@@ -94,8 +107,13 @@ export default function ProductCategory({
                 const category = categories.find((category) => category.id === categoryId);
                 return (
                   category && (
-                    <Badge key={category.id} variant="default">
+                    <Badge key={category.id} variant="default" className="flex items-center gap-1">
                       {category.name}
+                      <X
+                        className="cursor-pointer"
+                        size={16}
+                        onClick={() => handleRemoveCategory(category.id)}
+                      />
                     </Badge>
                   )
                 );
@@ -107,8 +125,13 @@ export default function ProductCategory({
                 const tag = tags.find((tag) => tag.id === tagId);
                 return (
                   tag && (
-                    <Badge key={tag.id} variant="default">
+                    <Badge key={tag.id} variant="default" className="flex items-center gap-1">
                       {tag.name}
+                      <X
+                        className="cursor-pointer"
+                        size={16}
+                        onClick={() => handleRemoveTag(tag.id)}
+                      />
                     </Badge>
                   )
                 );

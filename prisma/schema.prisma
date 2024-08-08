@@ -35,7 +35,7 @@ model Product {
   tags        Tag[]
   status      ProductStatus
   createdAt   DateTime   @default(now())
-  variants    Variant[]  // Relationship with variants
+  variants    Variant[]
 }
 
 enum ProductStatus {
