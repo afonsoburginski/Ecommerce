@@ -24,20 +24,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, price, stock, categories, tags, status, variants } = body;
+    const { name, description, price, stock, categories, tags, status, variants, images } = body;
 
-    // Validate required fields for the product
     if (!name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    // Ensure variants are valid
-    if (variants && variants.length > 0) {
-      for (const variant of variants) {
-        if (!variant.sku || typeof variant.stock !== 'number') {
-          return NextResponse.json({ error: 'Missing variant fields' }, { status: 400 });
-        }
-      }
     }
 
     const newProduct = await prisma.product.create({
@@ -47,6 +37,7 @@ export async function POST(request: Request) {
         price,
         stock,
         status,
+        images: images || [],
         categories: {
           connect: categories?.map((id: number) => ({ id })),
         },
@@ -77,7 +68,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, name, description, price, stock, categories, tags, status, variants } = body;
+    const { id, name, description, price, stock, categories, tags, status, variants, images } = body;
 
     if (!id || !name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -91,6 +82,7 @@ export async function PUT(request: Request) {
         price,
         stock,
         status,
+        images: images || [],
         categories: {
           set: categories?.map((id: number) => ({ id })),
         },
@@ -123,3 +115,4 @@ export async function PUT(request: Request) {
     );
   }
 }
+

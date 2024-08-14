@@ -48,11 +48,11 @@ interface OrderDetailsSheetProps {
     transaction: {
       status: string;
     };
-    createdAt: string;
     paymentDetails?: {
       brand: string;
       last4: string;
     };
+    createdAt: string;
     orderItems: Array<{
       id: number;
       quantity: number;
@@ -186,19 +186,17 @@ export const OrderDetailsSheet: React.FC<OrderDetailsSheetProps> = ({ order }) =
               <Separator className="my-4" />
               <div className="grid gap-3">
                 <div className="font-semibold">Payment Information</div>
-                <dl className="grid gap-3">
-                  {order.paymentDetails && (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <dt className="flex items-center gap-1 text-muted-foreground">
-                          <CreditCard className="h-4 w-4" />
-                          {`Cartão de crédito ${order.paymentDetails.brand}`}
-                        </dt>
-                        <dd>{`•••• ${order.paymentDetails.last4}`}</dd>
-                      </div>
-                    </>
-                  )}
-                </dl>
+                {order.paymentDetails && (
+                  <dl className="grid gap-3">
+                    <div className="flex items-center justify-between">
+                      <dt className="flex items-center gap-1 text-muted-foreground">
+                        <CreditCard className="h-4 w-4" />
+                        {`Cartão de crédito ${order.paymentDetails.brand}`}
+                      </dt>
+                      <dd>{`•••• ${order.paymentDetails.last4}`}</dd>
+                    </div>
+                  </dl>
+                )}
               </div>
             </CardContent>
             <CardFooter className="flex flex-row items-center border-t bg-muted/50 px-6 py-3">

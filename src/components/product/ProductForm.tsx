@@ -1,7 +1,3 @@
-// src/components/product/ProductForm.tsx
-
-"use client";
-
 import { useState, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +56,10 @@ export default function ProductForm({
     if (productData) {
       await onSave(productData);
     }
+  };
+
+  const handleImagesChange = (images: string[]) => {
+    setProductData((prev) => ({ ...prev, images }));
   };
 
   const handleBack = () => {
@@ -121,7 +121,10 @@ export default function ProductForm({
                   productData={productData}
                   setProductData={setProductData}
                 />
-                <ProductImages />
+                <ProductImages
+                  productImages={productData.images}
+                  onImagesChange={handleImagesChange}
+                />
               </div>
             </div>
             <div className="flex items-center justify-center gap-2 md:hidden">
