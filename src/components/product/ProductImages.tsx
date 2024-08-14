@@ -1,3 +1,4 @@
+// src/components/product/ProductImages.tsx
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Upload } from "lucide-react";
@@ -5,28 +6,28 @@ import { useState } from "react";
 
 interface ProductImagesProps {
   productImages?: string[];
-  onImagesChange?: (images: string[]) => void;
+  onImagesChange?: (images: File[]) => void;
 }
 
 export default function ProductImages({ productImages = [], onImagesChange }: ProductImagesProps) {
-  const [images, setImages] = useState<string[]>(productImages);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const uploadedImages = Array.from(e.target.files).map((file) => URL.createObjectURL(file));
-      const updatedImages = [...images, ...uploadedImages];
-      setImages(updatedImages);
+      const newFiles = Array.from(e.target.files);
+      const updatedFiles = [...imageFiles, ...newFiles];
+      setImageFiles(updatedFiles);
       if (onImagesChange) {
-        onImagesChange(updatedImages);
+        onImagesChange(updatedFiles);
       }
     }
   };
 
   const handleRemoveImage = (index: number) => {
-    const updatedImages = images.filter((_, i) => i !== index);
-    setImages(updatedImages);
+    const updatedFiles = imageFiles.filter((_, i) => i !== index);
+    setImageFiles(updatedFiles);
     if (onImagesChange) {
-      onImagesChange(updatedImages);
+      onImagesChange(updatedFiles);
     }
   };
 
@@ -38,23 +39,23 @@ export default function ProductImages({ productImages = [], onImagesChange }: Pr
       </CardHeader>
       <CardContent>
         <div className="grid gap-2">
-          {images.length > 0 && (
+          {imageFiles.length > 0 && (
             <Image
               alt="Product image"
               className="aspect-square w-full rounded-md object-cover"
               height="300"
-              src={images[0] ?? "/placeholder.png"}
+              src={URL.createObjectURL(imageFiles[0])}
               width="300"
             />
           )}
           <div className="grid grid-cols-3 gap-2">
-            {images.map((image, index) => (
+            {imageFiles.map((file, index) => (
               <div key={index} className="relative">
                 <Image
                   alt={`Product image ${index + 1}`}
                   className="aspect-square w-full rounded-md object-cover"
                   height="84"
-                  src={image ?? "/placeholder.png"}
+                  src={URL.createObjectURL(file)}
                   width="84"
                 />
                 <button

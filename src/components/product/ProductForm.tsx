@@ -58,7 +58,7 @@ export default function ProductForm({
     }
   };
 
-  const handleImagesChange = (images: string[]) => {
+  const handleImagesChange = (images: File[]) => {
     setProductData((prev) => ({ ...prev, images }));
   };
 
@@ -106,7 +106,7 @@ export default function ProductForm({
                 <ProductStock
                   productData={productData}
                   setProductData={setProductData}
-                  colors={colors} // Pass colors to ProductStock
+                  colors={colors}
                 />
                 <ProductCategory
                   categories={categories}
@@ -122,7 +122,7 @@ export default function ProductForm({
                   setProductData={setProductData}
                 />
                 <ProductImages
-                  productImages={productData.images}
+                  productImages={productData.images.map((image) => URL.createObjectURL(image))}
                   onImagesChange={handleImagesChange}
                 />
               </div>

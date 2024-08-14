@@ -17,7 +17,7 @@ interface Product {
   categoryId: number | null;
   categories: number[];
   tags: number[];
-  images: string[];
+  images: File[];
   variants: Variant[];
 }
 
@@ -52,11 +52,7 @@ export default function NewProduct() {
       await createProduct(productData);
       toast({
         title: "Success",
-        description: (
-          <span>
-            Product <strong style={{ color: 'green' }}>{productData.name}</strong> was saved successfully.
-          </span>
-        ),
+        description: `Product ${productData.name} was saved successfully.`,
       });
       router.push("/products");
     } catch (error) {
@@ -66,7 +62,7 @@ export default function NewProduct() {
       });
       console.error("Error saving product:", error);
     }
-  };
+  };  
 
   if (dataError) return <div>Error: {dataError.message}</div>;
   if (mutationError) return <div>Error: {mutationError}</div>;
@@ -81,3 +77,4 @@ export default function NewProduct() {
     />
   );
 }
+

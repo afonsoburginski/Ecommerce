@@ -1,9 +1,9 @@
-// src/lib/supabaseStorage.ts
+// src/services/supabaseStorage.ts
 import { supabase } from '@/lib/supabase';
 
 export async function uploadImage(file: File): Promise<string | null> {
   const { data, error } = await supabase.storage
-    .from('product-images') // Nome do bucket
+    .from('Images') // Nome do bucket
     .upload(`public/${Date.now()}_${file.name}`, file, {
       cacheControl: '3600',
       upsert: false,
@@ -14,6 +14,6 @@ export async function uploadImage(file: File): Promise<string | null> {
     return null;
   }
 
-  const publicUrl = supabase.storage.from('product-images').getPublicUrl(data.path).publicURL;
+  const publicUrl = supabase.storage.from('Images').getPublicUrl(data.path).publicURL;
   return publicUrl || null;
 }

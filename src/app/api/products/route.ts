@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { uploadImage } from '@/services/supabaseStorage';
 
 export async function GET() {
   try {
@@ -30,6 +31,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Upload imagens e obter URLs
+    const uploadedImages = [];
+    for (const image of images) {
+      const publicUrl = await uploadImage(image);
+      if (publicUrl) {
+        uploadedImages.push(publicUrl);
+      }
+    }
+
     const newProduct = await prisma.product.create({
       data: {
         name,
@@ -37,7 +47,7 @@ export async function POST(request: Request) {
         price,
         stock,
         status,
-        images: images || [],
+        images: uploadedImages,
         categories: {
           connect: categories?.map((id: number) => ({ id })),
         },
