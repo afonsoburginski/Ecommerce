@@ -1,61 +1,43 @@
-// app/api/stripe/checkout/route.ts
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import prisma from "@/lib/prisma";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-08-16",
-});
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { createCheckoutSession } from '@/services/stripeService';
 
 export async function POST(request: Request) {
   const { productId, userId } = await request.json();
 
   try {
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-    });
+    console.log('Iniciando processo de checkout para', { productId, userId });
+
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!product) {
-      return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 });
+      console.error('Produto não encontrado:', { productId });
+      return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    if (product.stock <= 0) {
+      console.error('Produto fora de estoque:', { productId });
+      return NextResponse.json({ error: 'Produto fora de estoque' }, { status: 400 });
+    }
 
     if (!user) {
-      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+      console.error('Usuário não encontrado:', { userId });
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      customer: user.stripeCustomerId,
-      line_items: [
-        {
-          price_data: {
-            currency: "brl",
-            product_data: {
-              name: product.name,
-            },
-            unit_amount: product.price * 100,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
-    });
+    if (!user.stripeCustomerId) {
+      console.error('Usuário não possui stripeCustomerId:', user);
+      return NextResponse.json({ error: 'Usuário sem stripeCustomerId' }, { status: 400 });
+    }
 
-    const transaction = await prisma.transaction.create({
-      data: {
-        stripeId: session.id,
-        amount: product.price,
-        status: "pending",
-      },
-    });
+    console.log('Criando sessão de checkout no Stripe para o usuário:', user);
 
-    await prisma.order.create({
+    const session = await createCheckoutSession(user, product);
+
+    console.log('Sessão de checkout criada com sucesso:', session.id);
+
+    const order = await prisma.order.create({
       data: {
         userId: user.id,
         total: product.price,
@@ -66,16 +48,21 @@ export async function POST(request: Request) {
             price: product.price,
           },
         },
-        transactionId: transaction.id,
+        transactionId: session.id,
+        status: 'PENDING',
       },
     });
 
+    if (!order) {
+      console.error('Erro ao criar pedido no banco de dados');
+      return NextResponse.json({ error: 'Erro ao criar pedido' }, { status: 500 });
+    }
+
+    console.log('Pedido criado com sucesso para o usuário:', user.id);
+
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Erro ao criar sessão de checkout:", error);
-    return NextResponse.json(
-      { error: "Erro ao criar sessão de checkout", details: error.message },
-      { status: 500 }
-    );
+    console.error('Erro ao criar sessão de checkout:', error.message, error.stack);
+    return NextResponse.json({ error: 'Erro ao criar sessão de checkout', details: error.message }, { status: 500 });
   }
 }

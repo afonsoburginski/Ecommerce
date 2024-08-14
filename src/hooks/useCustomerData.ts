@@ -1,4 +1,5 @@
 // src/hooks/useCustomerData.ts
+
 import axios from 'axios';
 import useSWR from 'swr';
 import { useToast } from '@/components/ui/use-toast';
@@ -9,7 +10,7 @@ export const useCustomerData = () => {
   const { toast } = useToast();
   const { data: customers, mutate, error } = useSWR('/api/users', fetcher);
 
-  const addCustomer = async (newCustomer: { name: string, email: string, password: string, role: string }) => {
+  const addCustomer = async (newCustomer: { name: string, email: string, password: string, role: string, address: string, phone: string, cpf: string, dateOfBirth: string }) => {
     try {
       const response = await axios.post('/api/users', newCustomer);
       const addedCustomer = response.data;

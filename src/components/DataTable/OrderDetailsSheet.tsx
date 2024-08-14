@@ -41,12 +41,18 @@ interface OrderDetailsSheetProps {
     user: {
       name: string;
       email: string;
+      phone: string;
+      address: string;
     };
     total: number;
     transaction: {
       status: string;
     };
     createdAt: string;
+    paymentDetails?: {
+      brand: string;
+      last4: string;
+    };
     orderItems: Array<{
       id: number;
       quantity: number;
@@ -144,9 +150,8 @@ export const OrderDetailsSheet: React.FC<OrderDetailsSheetProps> = ({ order }) =
                 <div className="grid gap-3">
                   <div className="font-semibold">Shipping Information</div>
                   <address className="grid gap-0.5 not-italic text-muted-foreground">
-                    <span>Liam Johnson</span>
-                    <span>1234 Main St.</span>
-                    <span>Anytown, CA 12345</span>
+                    <span>{order.user.name}</span>
+                    <span>{order.user.address}</span>
                   </address>
                 </div>
                 <div className="grid auto-rows-max gap-3">
@@ -173,7 +178,7 @@ export const OrderDetailsSheet: React.FC<OrderDetailsSheetProps> = ({ order }) =
                   <div className="flex items-center justify-between">
                     <dt className="text-muted-foreground">Phone</dt>
                     <dd>
-                      <a href="tel:+1234567890">+1 234 567 890</a>
+                      <a href={`tel:${order.user.phone}`}>{order.user.phone}</a>
                     </dd>
                   </div>
                 </dl>
@@ -182,13 +187,17 @@ export const OrderDetailsSheet: React.FC<OrderDetailsSheetProps> = ({ order }) =
               <div className="grid gap-3">
                 <div className="font-semibold">Payment Information</div>
                 <dl className="grid gap-3">
-                  <div className="flex items-center justify-between">
-                    <dt className="flex items-center gap-1 text-muted-foreground">
-                      <CreditCard className="h-4 w-4" />
-                      Visa
-                    </dt>
-                    <dd>**** **** **** 4532</dd>
-                  </div>
+                  {order.paymentDetails && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <dt className="flex items-center gap-1 text-muted-foreground">
+                          <CreditCard className="h-4 w-4" />
+                          {`Cartão de crédito ${order.paymentDetails.brand}`}
+                        </dt>
+                        <dd>{`•••• ${order.paymentDetails.last4}`}</dd>
+                      </div>
+                    </>
+                  )}
                 </dl>
               </div>
             </CardContent>

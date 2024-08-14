@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { BadgeProps } from "@/components/ui/badge";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -49,6 +48,7 @@ export const columns: ColumnDef<Order>[] = [
   },
   {
     accessorKey: "user.email",
+    id: "email",
     header: ({ column }) => {
       return (
         <Button
@@ -82,19 +82,29 @@ export const columns: ColumnDef<Order>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.original.transactionStatus;
+      console.log(`Transaction status for order ${row.original.id}: ${status}`);
       let variant: BadgeProps["variant"];
       let statusText: string;
-  
+
       switch (status) {
-        case "succeeded":
+        case "PAID":
           variant = "success";
-          statusText = "Succeeded";
+          statusText = "Paid";
           break;
-        case "pending":
+        case "PENDING":
+        case "unpaid":
           variant = "warning";
           statusText = "Pending";
           break;
-        case "failed":
+        case "SHIPPED":
+          variant = "info";
+          statusText = "Shipped";
+          break;
+        case "RECEIVED":
+          variant = "success";
+          statusText = "Received";
+          break;
+        case "FAILED":
         case "canceled":
           variant = "destructive";
           statusText = "Failed";
@@ -108,14 +118,14 @@ export const columns: ColumnDef<Order>[] = [
           statusText = "Unknown";
           break;
       }
-  
+
       return (
         <Badge variant={variant} className="capitalize">
           {statusText}
         </Badge>
       );
     },
-  },  
+  },
   {
     accessorKey: "createdAt",
     header: "Date",

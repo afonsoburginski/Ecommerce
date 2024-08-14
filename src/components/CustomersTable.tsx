@@ -1,5 +1,4 @@
 // src/components/CustomerTable.tsx
-"use client";
 
 import { useState } from 'react';
 import { MoreHorizontal } from "lucide-react";
@@ -40,13 +39,21 @@ const CustomerTable = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('CUSTOMER');
+  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
 
   const handleAddCustomer = () => {
-    addCustomer({ name, email, password, role });
+    addCustomer({ name, email, password, role, address, phone, cpf, dateOfBirth });
     setName('');
     setEmail('');
     setPassword('');
     setRole('CUSTOMER');
+    setAddress('');
+    setPhone('');
+    setCpf('');
+    setDateOfBirth('');
   };
 
   const handleDeleteCustomer = (customerId: number) => {
@@ -105,6 +112,51 @@ const CustomerTable = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="address" className="text-right">
+                  Address
+                </Label>
+                <Input
+                  id="address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="phone" className="text-right">
+                  Phone
+                </Label>
+                <Input
+                  id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="cpf" className="text-right">
+                  CPF
+                </Label>
+                <Input
+                  id="cpf"
+                  value={cpf}
+                  onChange={(e) => setCpf(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="dateOfBirth" className="text-right">
+                  Date of Birth
+                </Label>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
                   className="col-span-3"
                 />
               </div>

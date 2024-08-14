@@ -1,6 +1,6 @@
-// src/pages/api/stripe/sync-customer.ts
+// src/app/api/stripe/sync-customer.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { syncStripeCustomer } from '@/hooks/syncStripeCustomer';
+import { syncStripeCustomer } from '@/services/syncStripeCustomer';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {

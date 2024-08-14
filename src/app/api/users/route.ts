@@ -1,4 +1,5 @@
 // app/api/users/route.ts
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import Stripe from 'stripe';
@@ -17,7 +18,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { name, email, password, role } = await request.json();
+  const { name, email, password, role, address, phone, cpf, dateOfBirth } = await request.json();
   
   try {
     const stripeCustomer = await stripe.customers.create({
@@ -31,6 +32,10 @@ export async function POST(request: Request) {
         email,
         password,
         role,
+        address,
+        phone,
+        cpf,
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
         stripeCustomerId: stripeCustomer.id,
         createdAt: new Date(),
       },

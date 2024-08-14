@@ -15,6 +15,10 @@ model User {
   password          String
   name              String
   role              UserRole   @default(CUSTOMER)
+  address           String?
+  phone             String?
+  cpf               String?
+  dateOfBirth       DateTime?
   orders            Order[]
   createdAt         DateTime   @default(now())
   stripeCustomerId  String?
@@ -71,8 +75,10 @@ model Order {
   id            Int            @id @default(autoincrement())
   createdAt     DateTime       @default(now())
   total         Float
+  status        OrderStatus    @default(PENDING)
   user          User           @relation(fields: [userId], references: [id])
   userId        Int
+  transactionId String?
   orderItems    OrderItem[]
 }
 
@@ -84,6 +90,15 @@ model OrderItem {
   productId Int
   order     Order   @relation(fields: [orderId], references: [id])
   orderId   Int
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  RECEIVED
+  CANCELED
+  FAILED
 }
 
 model Tag {

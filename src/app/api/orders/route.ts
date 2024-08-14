@@ -1,55 +1,46 @@
 // app/api/orders/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-08-16",
-});
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { retrieveSession } from '@/services/stripeService';
 
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({
       include: {
         user: true,
-        orderItems: {
-          include: {
-            product: true,
-          },
-        },
+        orderItems: { include: { product: true } },
       },
     });
 
-    // Para cada ordem, buscamos o status da transação diretamente do Stripe
     const ordersWithStatus = await Promise.all(
       orders.map(async (order) => {
+        let transactionStatus = "unknown";
         if (order.transactionId) {
-          console.log(`Fetching Stripe transaction for order ${order.id} with transactionId ${order.transactionId}`);
           try {
-            const stripeSession = await stripe.checkout.sessions.retrieve(order.transactionId);
-            console.log(`Stripe transaction fetched successfully for order ${order.id}, status: ${stripeSession.payment_status}`);
-            return {
-              ...order,
-              transactionStatus: stripeSession.payment_status,
-            };
+            const stripeSession = await retrieveSession(order.transactionId);
+            if (stripeSession?.payment_status) {
+              transactionStatus = stripeSession.payment_status === "unpaid" ? "PENDING" :
+                                  stripeSession.payment_status === "paid" ? "PAID" : stripeSession.payment_status;
+            }
+
+            if (order.status !== transactionStatus) {
+              await prisma.order.update({
+                where: { id: order.id },
+                data: { status: transactionStatus || "unknown" },
+              });
+            }
           } catch (error) {
-            console.error(`Error fetching Stripe transaction for order ${order.id}:`, error.message);
-            return {
-              ...order,
-              transactionStatus: "error",
-            };
+            console.error(`Erro ao buscar transação do Stripe para o pedido ${order.id}:`, error.message);
+            transactionStatus = "FAILED";
           }
         }
-        return { ...order, transactionStatus: "unknown" };
+        return { ...order, transactionStatus };
       })
     );
 
     return NextResponse.json(ordersWithStatus);
   } catch (error) {
-    console.error("Erro ao buscar ordens:", error.message);
-    return NextResponse.json(
-      { error: "Erro ao buscar ordens", details: error.message },
-      { status: 500 }
-    );
+    console.error('Erro ao buscar pedidos:', error.message);
+    return NextResponse.json({ error: 'Erro ao buscar pedidos', details: error.message }, { status: 500 });
   }
 }
