@@ -1,4 +1,3 @@
-// src/app/api/products/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
@@ -27,10 +26,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, description, price, stock, categories, tags, status, variants } = body;
 
+    // Validate required fields for the product
     if (!name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Ensure variants are valid
     if (variants && variants.length > 0) {
       for (const variant of variants) {
         if (!variant.sku || typeof variant.stock !== 'number') {
@@ -122,4 +123,3 @@ export async function PUT(request: Request) {
     );
   }
 }
-z

@@ -65,7 +65,7 @@ export default function Sidebar() {
       <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link href="/settings" className={linkClass('/settings')}>
+            <Link href="/test" className={linkClass('/test')}>
               <Settings className="h-5 w-5" />
               <span className="sr-only">Settings</span>
             </Link>

@@ -1,4 +1,4 @@
-// app/products/NewProduct/page.tsx
+// app/products/register/page.tsx
 'use client';
 
 import { useProductData } from "@/hooks/useProductData";
@@ -6,6 +6,8 @@ import { useProductMutation } from "@/hooks/useProductMutation";
 import ProductForm from "@/components/product/ProductForm";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+
 interface Product {
   name: string;
   description: string;
@@ -28,18 +30,9 @@ interface Variant {
 
 export default function NewProduct() {
   const router = useRouter();
-  const {
-    categories,
-    tags,
-    isLoading: dataLoading,
-    error: dataError,
-  } = useProductData();
-
-  const {
-    isLoading: mutationLoading,
-    error: mutationError,
-    mutate,
-  } = useProductMutation();
+  const { categories, tags, error: dataError } = useProductData();
+  const { error: mutationError, createProduct } = useProductMutation();
+  const { toast } = useToast();
 
   const [productData, setProductData] = useState<Product>({
     name: "New Product",
@@ -56,14 +49,25 @@ export default function NewProduct() {
 
   const handleSaveProduct = async (productData: Product) => {
     try {
-      await mutate("/products", "POST", productData);
+      await createProduct(productData);
+      toast({
+        title: "Success",
+        description: (
+          <span>
+            Product <strong style={{ color: 'green' }}>{productData.name}</strong> was saved successfully.
+          </span>
+        ),
+      });
       router.push("/products");
     } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to save product ${productData.name}.`,
+      });
       console.error("Error saving product:", error);
     }
   };
 
-  if (dataLoading || mutationLoading) return <div>Loading...</div>;
   if (dataError) return <div>Error: {dataError.message}</div>;
   if (mutationError) return <div>Error: {mutationError}</div>;
 

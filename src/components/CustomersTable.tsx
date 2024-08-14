@@ -1,7 +1,8 @@
+// src/components/CustomerTable.tsx
 "use client";
 
+import { useState } from 'react';
 import { MoreHorizontal } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,48 +28,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-// Dados de exemplo simulando uma lista de clientes
-const customers = [
-  {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    registeredAt: "2023-07-12",
-    status: "online",
-  },
-  {
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    registeredAt: "2023-10-18",
-    status: "offline",
-  },
-  {
-    name: "Alice Johnson",
-    email: "alice.johnson@example.com",
-    registeredAt: "2023-11-29",
-    status: "online",
-  },
-  {
-    name: "Bob Brown",
-    email: "bob.brown@example.com",
-    registeredAt: "2023-12-25",
-    status: "offline",
-  },
-  {
-    name: "Charlie Davis",
-    email: "charlie.davis@example.com",
-    registeredAt: "2024-01-01",
-    status: "online",
-  },
-  {
-    name: "Diana Evans",
-    email: "diana.evans@example.com",
-    registeredAt: "2024-02-14",
-    status: "offline",
-  },
-];
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCustomers } from '@/contexts/CustomerContext';
 
 const CustomerTable = () => {
+  const { customers, addCustomer, deleteCustomer } = useCustomers();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('CUSTOMER');
+
+  const handleAddCustomer = () => {
+    addCustomer({ name, email, password, role });
+    setName('');
+    setEmail('');
+    setPassword('');
+    setRole('CUSTOMER');
+  };
+
+  const handleDeleteCustomer = (customerId: number) => {
+    deleteCustomer(customerId);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -78,29 +62,97 @@ const CustomerTable = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline">Add Customer</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add Customer</DialogTitle>
+              <DialogDescription>
+                Enter the details of the new customer.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="password" className="text-right">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="role" className="text-right">
+                  Role
+                </Label>
+                <Select
+                  id="role"
+                  onValueChange={(value) => setRole(value)}
+                  defaultValue={role}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ADMIN">Admin</SelectItem>
+                    <SelectItem value="CUSTOMER">Customer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleAddCustomer}>Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Registered At</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.map((customer, index) => (
-              <TableRow key={index}>
+            {customers && customers.map((customer: any) => (
+              <TableRow key={customer.id}>
                 <TableCell className="font-medium">{customer.name}</TableCell>
                 <TableCell>{customer.email}</TableCell>
-                <TableCell>{customer.registeredAt}</TableCell>
+                <TableCell>{new Date(customer.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant={customer.status === "online" ? "success" : "destructive"}
-                  >
-                    {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
+                  <Badge variant={customer.role === "ADMIN" ? "success" : "secondary"}>
+                    {customer.role}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -114,7 +166,7 @@ const CustomerTable = () => {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>Delete</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDeleteCustomer(customer.id)}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -125,7 +177,7 @@ const CustomerTable = () => {
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
-          Showing <strong>1-10</strong> of <strong>32</strong> customers
+          Showing <strong>{customers ? customers.length : 0}</strong> customers
         </div>
       </CardFooter>
     </Card>

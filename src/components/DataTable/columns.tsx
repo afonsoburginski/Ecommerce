@@ -1,11 +1,10 @@
 // components/DataTable/columns.tsx
-
 import { ColumnDef } from "@tanstack/react-table";
-import { Payment } from "./Payment";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge"; // Import Badge
+import { Badge } from "@/components/ui/badge";
+import { BadgeProps } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -15,8 +14,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { OrderDetailsSheet } from "./OrderDetailsSheet";
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Order>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -40,12 +40,15 @@ export const columns: ColumnDef<Payment>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "customer",
+    accessorKey: "user.name",
     header: "Customer",
-    cell: ({ row }) => <div>{row.getValue("customer")}</div>,
+    cell: ({ row }) => {
+      const customerName = row.original.user?.name;
+      return <div>{customerName}</div>;
+    },
   },
   {
-    accessorKey: "email",
+    accessorKey: "user.email",
     header: ({ column }) => {
       return (
         <Button
@@ -57,38 +60,31 @@ export const columns: ColumnDef<Payment>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    cell: ({ row }) => {
+      const customerEmail = row.original.user?.email;
+      return <div className="lowercase">{customerEmail}</div>;
+    },
   },
   {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
+    accessorKey: "total",
+    header: () => <div className="text-right">Total</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
-      const currency = row.getValue("currency") || "";
-  
-      // Format the amount with correct currency symbol
+      const total = parseFloat(row.getValue("total"));
       const formatted = new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
-      }).format(amount);
-  
+      }).format(total);
       return <div className="text-right font-medium">{formatted}</div>;
     },
-  },  
-  {
-    accessorKey: "cardLast4",
-    header: "Card Last 4",
-    cell: ({ row }) => <div>**** {row.getValue("cardLast4")}</div>,
   },
   {
-    accessorKey: "status",
+    accessorKey: "transactionStatus",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status");
+      const status = row.original.transactionStatus;
       let variant: BadgeProps["variant"];
       let statusText: string;
-
-      // Mapeamento de status da transação
+  
       switch (status) {
         case "succeeded":
           variant = "success";
@@ -103,34 +99,44 @@ export const columns: ColumnDef<Payment>[] = [
           variant = "destructive";
           statusText = "Failed";
           break;
+        case "error":
+          variant = "destructive";
+          statusText = "Error";
+          break;
         default:
           variant = "default";
-          statusText = status.charAt(0).toUpperCase() + status.slice(1);
+          statusText = "Unknown";
           break;
       }
-
+  
       return (
         <Badge variant={variant} className="capitalize">
           {statusText}
         </Badge>
       );
     },
-  },
+  },  
   {
-    accessorKey: "date",
+    accessorKey: "createdAt",
     header: "Date",
-    cell: ({ row }) => <div>{row.getValue("date")}</div>,
+    cell: ({ row }) => <div>{new Date(row.getValue("createdAt")).toLocaleString()}</div>,
   },
   {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }) => <div>{row.getValue("description")}</div>,
+    accessorKey: "orderItems",
+    header: "Items",
+    cell: ({ row }) => (
+      <ul>
+        {row.original.orderItems.map(item => (
+          <li key={item.id}>{item.product.name} - {item.quantity} x {item.price.toFixed(2)}</li>
+        ))}
+      </ul>
+    ),
   },
   {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original;
+      const order = row.original;
 
       return (
         <DropdownMenu>
@@ -143,13 +149,12 @@ export const columns: ColumnDef<Payment>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
+              onClick={() => navigator.clipboard.writeText(order.id.toString())}
             >
-              Copy payment ID
+              Copy order ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            <OrderDetailsSheet order={order} />
           </DropdownMenuContent>
         </DropdownMenu>
       );

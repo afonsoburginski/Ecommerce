@@ -8,20 +8,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 
 export async function GET() {
   try {
-    // Retrieve balance transactions from Stripe
     const transactions = await stripe.balanceTransactions.list({
-      limit: 100, // Limit of transactions to return
+      limit: 100,
     });
 
     const transactionDetails = await Promise.all(
       transactions.data.map(async (txn) => {
         try {
-          // Retrieve charge details if a source exists
           const charge = txn.source
             ? await stripe.charges.retrieve(txn.source as string)
             : null;
 
-          // Retrieve customer details if a customer exists
           let customer = null;
           if (charge?.customer && typeof charge.customer === "string") {
             customer = await stripe.customers.retrieve(charge.customer);
@@ -40,7 +37,6 @@ export async function GET() {
           };
         } catch (error) {
           console.error(`Failed to retrieve charge or customer for transaction ${txn.id}:`, error);
-          // Return partial data even if charge or customer retrieval fails
           return {
             id: txn.id,
             amount: txn.amount / 100,

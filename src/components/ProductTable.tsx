@@ -1,5 +1,4 @@
 // src/components/ProductTable.tsx
-
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -32,7 +31,7 @@ import {
 } from "@/components/ui/table";
 import { useProducts } from "@/contexts/ProductContext";
 
-const ProductTable = ({ status }: { status: string }) => {
+export default function ProductTable({ status }: { status: string }) {
   const router = useRouter();
   const { products, isLoading, isError } = useProducts();
 
@@ -44,7 +43,7 @@ const ProductTable = ({ status }: { status: string }) => {
     ? products 
     : products.filter((product) => {
         return product.status.toUpperCase() === normalizedStatus;
-      });  
+      });
 
   const getBadgeVariant = (status: string) => {
     switch (status.toUpperCase()) {
@@ -156,6 +155,4 @@ const ProductTable = ({ status }: { status: string }) => {
       </CardFooter>
     </Card>
   );
-};
-
-export default ProductTable;
+}

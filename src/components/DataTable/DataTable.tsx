@@ -1,3 +1,4 @@
+// components/DataTable/DataTable.tsx
 import React from "react";
 import { useStripeTransactions } from "@/contexts/StripeTransactionsContext";
 import {
@@ -31,14 +32,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function DataTable() {
-  const { transactions } = useStripeTransactions();
+  const { orders } = useStripeTransactions();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data: transactions,
+    data: orders,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -61,9 +62,9 @@ export default function DataTable() {
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("user.email")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+            table.getColumn("user.email")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

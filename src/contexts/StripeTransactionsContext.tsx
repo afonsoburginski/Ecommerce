@@ -1,11 +1,31 @@
 // context/StripeTransactionsContext.tsx
 'use client';
-import { Payment } from '@/types/global';
 import React, { createContext, useContext } from 'react';
 import useSWR from 'swr';
 
+interface OrderItem {
+  id: number;
+  quantity: number;
+  price: number;
+  product: {
+    name: string;
+  };
+}
+
+interface Order {
+  id: number;
+  createdAt: string;
+  total: number;
+  user: {
+    name: string;
+    email: string;
+  };
+  orderItems: OrderItem[];
+  transactionStatus: string; // Add this field
+}
+
 interface StripeTransactionsContextValue {
-  transactions: Payment[];
+  orders: Order[];
   loading: boolean;
   error: string | null;
 }
@@ -20,41 +40,29 @@ export const useStripeTransactions = (): StripeTransactionsContextValue => {
   return context;
 };
 
-const fetcher = async (url: string): Promise<Payment[]> => {
+const fetcher = async (url: string): Promise<Order[]> => {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch transactions: ${response.statusText}`);
+    throw new Error(`Failed to fetch orders: ${response.statusText}`);
   }
   const data = await response.json();
-
-  if (!Array.isArray(data)) {
-    throw new Error('Invalid data format');
-  }
-
-  return data.map((txn: any) => ({
-    id: txn.id,
-    amount: txn.amount,
-    currency: txn.currency,
-    status: txn.status,
-    description: txn.description,
-    customer: txn.customer,
-    email: txn.email,
-    date: txn.date,
-    cardLast4: txn.cardLast4,
-  }));
+  console.log('Fetched Orders:', data); // Log dos dados recebidos
+  return data;
 };
 
 export const StripeTransactionsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { data, error, isValidating } = useSWR<Payment[]>('/api/stripe', fetcher, {
+  const { data, error, isValidating } = useSWR<Order[]>('/api/orders', fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 60 * 60 * 1000, 
+    dedupingInterval: 60 * 60 * 1000,
     refreshInterval: 0,
     revalidateIfStale: true,
   });
 
+  console.log('Orders in Context:', data); // Log dos dados no contexto
+
   return (
-    <StripeTransactionsContext.Provider value={{ transactions: data || [], loading: !data && isValidating, error: error?.message || null }}>
+    <StripeTransactionsContext.Provider value={{ orders: data || [], loading: !data && isValidating, error: error?.message || null }}>
       {children}
     </StripeTransactionsContext.Provider>
   );
