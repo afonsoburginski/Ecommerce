@@ -45,9 +45,6 @@ export default function DataTable() {
     },
   });
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
   return (
     <div className="w-full">
       <div className="flex items-center py-4">

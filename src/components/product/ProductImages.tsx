@@ -2,22 +2,24 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Upload } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ProductImagesProps {
-  productImages?: string[];
+  productImages?: File[];
   onImagesChange?: (images: File[]) => void;
 }
 
 export default function ProductImages({ productImages = [], onImagesChange }: ProductImagesProps) {
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>(productImages);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
+      console.log("Captured files:", newFiles);
       const updatedFiles = [...imageFiles, ...newFiles];
       setImageFiles(updatedFiles);
       if (onImagesChange) {
+        console.log("Images being passed to onImagesChange:", updatedFiles);
         onImagesChange(updatedFiles);
       }
     }

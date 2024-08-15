@@ -13,6 +13,7 @@ declare global {
   };
 
   interface Product {
+    images: any;
     id: number;
     name: string;
     status: string;

@@ -66,6 +66,7 @@ export default function ProductPage() {
       const response = await axios.post("/api/stripe/checkout", {
         productId,
         userId: selectedUser.id,
+        variantId: variant.sku, // Use SKU or variant ID to identify the variant being purchased
         quantity,
       });
       console.log("Checkout session created, redirecting to:", response.data.url);
@@ -104,6 +105,19 @@ export default function ProductPage() {
     setSelectedUser(users.find((user) => user.id === selectedId) || null);
   };
 
+  const getSelectedVariantStock = (productId) => {
+    const variant = selectedVariant[productId];
+    if (!variant || !variant.color || !variant.size) return 0;
+
+    const selectedVariantProduct = products
+      .find((product) => product.id === productId)
+      .variants.find(
+        (v) => v.color === variant.color && v.size === variant.size
+      );
+
+    return selectedVariantProduct ? selectedVariantProduct.stock : 0;
+  };
+
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
@@ -134,15 +148,24 @@ export default function ProductPage() {
                       <CardDescription>{product.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Image
-                        src={`/path/to/product/images/${product.id}.png`}
-                        alt={product.name}
-                        width={300}
-                        height={200}
-                        className="rounded-lg"
-                      />
+                      {product.images.length > 0 ? (
+                        <Image
+                          src={product.images[0]} // Usando a primeira imagem do array
+                          alt={product.name}
+                          width={300}
+                          height={200}
+                          className="rounded-lg"
+                        />
+                      ) : (
+                        <Image
+                          src="/placeholder.svg" // Exibe um placeholder se não houver imagem
+                          alt="Placeholder"
+                          width={300}
+                          height={200}
+                          className="rounded-lg"
+                        />
+                      )}
                       <p className="mt-2 text-sm">Preço: R${product.price.toFixed(2)}</p>
-                      <p className="text-sm">Estoque: {product.stock}</p>
 
                       <div className="mt-4">
                         <Label className="block mb-2">Escolha a cor:</Label>
@@ -178,27 +201,30 @@ export default function ProductPage() {
                             </ToggleGroup>
                           </>
                         )}
+
+                        <p className="mt-2 text-sm">Estoque: {getSelectedVariantStock(product.id)}</p>
+
                         <div className="flex items-center mt-4">
                           <Input
                             type="number"
-                            value={Math.min(quantity, product.stock)}
+                            value={Math.min(quantity, getSelectedVariantStock(product.id))}
                             onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                             min="1"
-                            max={product.stock}
+                            max={getSelectedVariantStock(product.id)}
                             className="mr-2 w-20"
-                            disabled={product.stock <= 0}
+                            disabled={getSelectedVariantStock(product.id) <= 0}
                           />
                           <Button
                             onClick={() => handlePurchase(product.id)}
                             disabled={
                               loading ||
-                              product.stock <= 0 ||
+                              getSelectedVariantStock(product.id) <= 0 ||
                               !selectedVariant[product.id]?.color ||
                               !selectedVariant[product.id]?.size
                             }
-                            className={`w-full ${product.stock > 0 ? 'bg-blue-500 text-white hover:bg-blue-700' : 'bg-gray-400 text-white cursor-not-allowed'}`}
+                            className={`w-full ${getSelectedVariantStock(product.id) > 0 ? 'bg-blue-500 text-white hover:bg-blue-700' : 'bg-gray-400 text-white cursor-not-allowed'}`}
                           >
-                            {product.stock > 0 ? "Comprar" : "Indisponível"}
+                            {getSelectedVariantStock(product.id) > 0 ? "Comprar" : "Indisponível"}
                           </Button>
                         </div>
                       </div>

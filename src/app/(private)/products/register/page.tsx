@@ -1,12 +1,13 @@
 // app/products/register/page.tsx
 'use client';
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { uploadImage } from "@/services/supabaseStorage";
+import ProductForm from "@/components/product/ProductForm";
 import { useProductData } from "@/hooks/useProductData";
 import { useProductMutation } from "@/hooks/useProductMutation";
-import ProductForm from "@/components/product/ProductForm";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
 
 interface Product {
   name: string;
@@ -14,7 +15,6 @@ interface Product {
   price: number;
   stock: number;
   status: string;
-  categoryId: number | null;
   categories: number[];
   tags: number[];
   images: File[];
@@ -40,7 +40,6 @@ export default function NewProduct() {
     price: 0,
     stock: 0,
     status: "ACTIVE",
-    categoryId: null,
     categories: [],
     tags: [],
     images: [],
@@ -49,7 +48,26 @@ export default function NewProduct() {
 
   const handleSaveProduct = async (productData: Product) => {
     try {
-      await createProduct(productData);
+      const uploadedImages: string[] = [];
+      for (const image of productData.images) {
+        const publicUrl = await uploadImage(image);
+        if (publicUrl) {
+          uploadedImages.push(publicUrl);
+        } else {
+          throw new Error('Falha no upload de uma ou mais imagens.');
+        }
+      }
+  
+      if (uploadedImages.length === 0) {
+        throw new Error('Nenhuma imagem foi carregada.');
+      }
+  
+      const updatedProductData = {
+        ...productData,
+        images: uploadedImages,
+      };
+  
+      await createProduct(updatedProductData);
       toast({
         title: "Success",
         description: `Product ${productData.name} was saved successfully.`,
@@ -63,7 +81,7 @@ export default function NewProduct() {
       console.error("Error saving product:", error);
     }
   };  
-
+  
   if (dataError) return <div>Error: {dataError.message}</div>;
   if (mutationError) return <div>Error: {mutationError}</div>;
 
@@ -77,4 +95,3 @@ export default function NewProduct() {
     />
   );
 }
-

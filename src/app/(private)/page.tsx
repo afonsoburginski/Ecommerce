@@ -1,5 +1,5 @@
+// src/app/page.tsx
 'use client';
-
 import React from 'react';
 import { CardGrid } from '@/components/dashboard/CardGrid';
 import { TopSellingProductsCard } from '@/components/dashboard/TopSellingProductsCard';

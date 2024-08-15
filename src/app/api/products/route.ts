@@ -1,3 +1,4 @@
+// app/api/products/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { uploadImage } from '@/services/supabaseStorage';
@@ -25,19 +26,40 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log('Dados recebidos para criar produto:', body);
+
     const { name, description, price, stock, categories, tags, status, variants, images } = body;
+
+    console.log('Tipo de dados recebidos:', {
+      name: typeof name,
+      description: typeof description,
+      price: typeof price,
+      stock: typeof stock,
+      categories: Array.isArray(categories),
+      tags: Array.isArray(tags),
+      status: typeof status,
+      variants: Array.isArray(variants),
+      images: Array.isArray(images)
+    });
 
     if (!name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Upload imagens e obter URLs
-    const uploadedImages = [];
-    for (const image of images) {
-      const publicUrl = await uploadImage(image);
-      if (publicUrl) {
-        uploadedImages.push(publicUrl);
+    const uploadedImages: string[] = [];
+    if (Array.isArray(images) && images.length > 0) {
+      for (const image of images) {
+        const publicUrl = await uploadImage(image);
+        if (publicUrl) {
+          uploadedImages.push(publicUrl);
+        }
       }
+    }
+
+    console.log('Imagens carregadas:', uploadedImages);
+
+    if (uploadedImages.length === 0) {
+      return NextResponse.json({ error: 'Failed to upload images' }, { status: 400 });
     }
 
     const newProduct = await prisma.product.create({
@@ -55,7 +77,7 @@ export async function POST(request: Request) {
           connect: tags?.map((id: number) => ({ id })),
         },
         variants: {
-          create: variants.map((variant: Variant) => ({
+          create: variants.map((variant: any) => ({
             sku: variant.sku,
             stock: variant.stock,
             size: variant.size,
@@ -65,9 +87,10 @@ export async function POST(request: Request) {
       },
     });
 
+    console.log('Produto criado com sucesso:', newProduct);
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error: any) {
-    console.error('Error creating product:', error.message, error.stack);
+    console.error('Erro ao criar produto:', error.message, error.stack);
     return NextResponse.json(
       { error: 'Internal Server Error', details: error.message },
       { status: 500 }

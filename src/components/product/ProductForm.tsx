@@ -1,3 +1,4 @@
+// src/components/product/ProductForm.tsx
 import { useState, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -53,15 +54,17 @@ export default function ProductForm({
   const router = useRouter();
 
   const handleSaveProduct = async () => {
+    console.log("Product data being sent:", productData);
     if (productData) {
       await onSave(productData);
     }
   };
 
   const handleImagesChange = (images: File[]) => {
+    console.log("Images received in handleImagesChange:", images);
     setProductData((prev) => ({ ...prev, images }));
   };
-
+  
   const handleBack = () => {
     router.back();
   };
@@ -122,7 +125,7 @@ export default function ProductForm({
                   setProductData={setProductData}
                 />
                 <ProductImages
-                  productImages={productData.images.map((image) => URL.createObjectURL(image))}
+                  productImages={productData.images}
                   onImagesChange={handleImagesChange}
                 />
               </div>

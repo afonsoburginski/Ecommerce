@@ -29,8 +29,11 @@ export function TopSellingProductsCard() {
         {topSellingProducts.map((product, index) => (
           <div key={index} className="flex items-center gap-4">
             <Avatar className="hidden h-9 w-9 sm:flex">
-              <AvatarImage src={`/path/to/product/images/${product.id}.png`} alt={product.name} />
-              <AvatarFallback>{product.name.charAt(0)}</AvatarFallback>
+              {product.images.length > 0 ? (
+                <AvatarImage src={product.images[0]} alt={product.name} />
+              ) : (
+                <AvatarFallback>{product.name.charAt(0)}</AvatarFallback>
+              )}
             </Avatar>
             <div className="grid gap-1">
               <p className="text-sm font-medium leading-none">

@@ -35,9 +35,6 @@ export default function ProductTable({ status }: { status: string }) {
   const router = useRouter();
   const { products, isLoading, isError } = useProducts();
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading products.</div>;
-
   const normalizedStatus = status.toUpperCase();
   const filteredProducts = normalizedStatus === "ALL" 
     ? products 
@@ -93,7 +90,7 @@ export default function ProductTable({ status }: { status: string }) {
                     alt="Product image"
                     className="aspect-square rounded-md object-cover"
                     height="64"
-                    src="/placeholder.svg"
+                    src={product.images[0] || '/placeholder.svg'}
                     width="64"
                   />
                 </TableCell>
