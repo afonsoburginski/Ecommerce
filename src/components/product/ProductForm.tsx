@@ -9,6 +9,9 @@ import ProductCategory from "@/components/product/ProductCategory";
 import ProductStatus from "@/components/product/ProductStatus";
 import ProductImages from "@/components/product/ProductImages";
 import { useRouter } from "next/navigation";
+import { uploadImage } from "@/services/supabaseStorage";
+import { useToast } from "@/components/ui/use-toast";
+import { useProductMutation } from "@/hooks/useProductMutation";
 
 interface ProductFormProps {
   product?: Product;
@@ -16,7 +19,6 @@ interface ProductFormProps {
   tags: Tag[];
   statuses: string[];
   colors?: Color[];
-  onSave: (productData: any) => Promise<void>;
 }
 
 export default function ProductForm({
@@ -25,7 +27,6 @@ export default function ProductForm({
   tags,
   statuses,
   colors,
-  onSave,
 }: ProductFormProps) {
   const [productData, setProductData] = useState<Product>({
     name: product?.name || "New Product",
@@ -52,11 +53,40 @@ export default function ProductForm({
   }, [product]);
 
   const router = useRouter();
+  const { toast } = useToast();
+  const { createProduct } = useProductMutation();
 
   const handleSaveProduct = async () => {
     console.log("Product data being sent:", productData);
-    if (productData) {
-      await onSave(productData);
+
+    const uploadedImages: string[] = [];
+    for (const image of productData.images) {
+      const publicUrl = await uploadImage(image as File);
+      if (publicUrl) {
+        uploadedImages.push(publicUrl);
+      } else {
+        console.error('Falha ao carregar a imagem:', image);
+      }
+    }
+
+    const updatedProductData = {
+      ...productData,
+      images: uploadedImages,
+    };
+
+    try {
+      await createProduct(updatedProductData);
+      toast({
+        title: "Success",
+        description: `Product ${updatedProductData.name} was saved successfully.`,
+      });
+      router.push("/products");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to save product ${updatedProductData.name}.`,
+      });
+      console.error("Error saving product:", error);
     }
   };
 
@@ -64,7 +94,7 @@ export default function ProductForm({
     console.log("Images received in handleImagesChange:", images);
     setProductData((prev) => ({ ...prev, images }));
   };
-  
+
   const handleBack = () => {
     router.back();
   };

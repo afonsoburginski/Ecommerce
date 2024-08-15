@@ -30,61 +30,37 @@ export async function POST(request: Request) {
 
     const { name, description, price, stock, categories, tags, status, variants, images } = body;
 
-    console.log('Tipo de dados recebidos:', {
-      name: typeof name,
-      description: typeof description,
-      price: typeof price,
-      stock: typeof stock,
-      categories: Array.isArray(categories),
-      tags: Array.isArray(tags),
-      status: typeof status,
-      variants: Array.isArray(variants),
-      images: Array.isArray(images)
-    });
-
     if (!name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const uploadedImages: string[] = [];
-    if (Array.isArray(images) && images.length > 0) {
-      for (const image of images) {
-        const publicUrl = await uploadImage(image);
-        if (publicUrl) {
-          uploadedImages.push(publicUrl);
-        }
-      }
-    }
+    const newProductData = {
+      name,
+      description,
+      price,
+      stock,
+      status,
+      images,
+      categories: {
+        connect: categories?.map((id: number) => ({ id })),
+      },
+      tags: {
+        connect: tags?.map((id: number) => ({ id })),
+      },
+      variants: {
+        create: variants.map((variant: any) => ({
+          sku: variant.sku,
+          stock: variant.stock,
+          size: variant.size,
+          color: variant.color,
+        })),
+      },
+    };
 
-    console.log('Imagens carregadas:', uploadedImages);
-
-    if (uploadedImages.length === 0) {
-      return NextResponse.json({ error: 'Failed to upload images' }, { status: 400 });
-    }
+    console.log('Dados do produto a ser criado:', newProductData);
 
     const newProduct = await prisma.product.create({
-      data: {
-        name,
-        description,
-        price,
-        stock,
-        status,
-        images: uploadedImages,
-        categories: {
-          connect: categories?.map((id: number) => ({ id })),
-        },
-        tags: {
-          connect: tags?.map((id: number) => ({ id })),
-        },
-        variants: {
-          create: variants.map((variant: any) => ({
-            sku: variant.sku,
-            stock: variant.stock,
-            size: variant.size,
-            color: variant.color,
-          })),
-        },
-      },
+      data: newProductData,
     });
 
     console.log('Produto criado com sucesso:', newProduct);

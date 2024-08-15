@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import useSWR from 'swr';
 
 interface UseProductDataResult {
   product: Product | null;
@@ -7,62 +7,32 @@ interface UseProductDataResult {
   tags: Tag[];
   isLoading: boolean;
   error: Error | null;
+  mutateProducts: () => void;
+  mutateCategories: () => void;
+  mutateTags: () => void;
 }
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export const useProductData = (productId?: string): UseProductDataResult => {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data: productsData, error: productsError, mutate: mutateProducts } = useSWR('/api/products', fetcher);
+  const { data: categoriesData, error: categoriesError, mutate: mutateCategories } = useSWR('/api/categories', fetcher);
+  const { data: tagsData, error: tagsError, mutate: mutateTags } = useSWR('/api/tags', fetcher);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
+  const product = productId ? productsData?.find((p: Product) => p.id === Number(productId)) || null : null;
 
-        const [categoriesResponse, tagsResponse, productsResponse] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/tags"),
-          fetch("/api/products"),
-        ]);
-
-        if (!categoriesResponse.ok || !tagsResponse.ok || !productsResponse.ok) {
-          throw new Error("Failed to fetch categories, tags, or products");
-        }
-
-        const categoriesData = await categoriesResponse.json();
-        const tagsData = await tagsResponse.json();
-        const productsData = await productsResponse.json();
-
-        setCategories(categoriesData);
-        setTags(tagsData);
-        setProducts(productsData);
-
-        if (productId) {
-          const productData = productsData.find((p: Product) => p.id === Number(productId));
-          if (!productData) {
-            throw new Error("Product not found");
-          }
-          setProduct(productData);
-        }
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [productId]);
+  const isLoading = !productsData || !categoriesData || !tagsData;
+  const error = productsError || categoriesError || tagsError;
 
   return {
     product,
-    products,
-    categories,
-    tags,
+    products: productsData || [],
+    categories: categoriesData || [],
+    tags: tagsData || [],
     isLoading,
     error,
+    mutateProducts,
+    mutateCategories,
+    mutateTags,
   };
 };
