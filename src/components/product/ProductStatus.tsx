@@ -1,15 +1,23 @@
-import { Dispatch, SetStateAction } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-interface ProductStatusProps {
+export default function ProductStatus({
+  statuses = [],
+  productData = {},
+  setProductData,
+}: {
   statuses: string[];
   productData: Product;
-  setProductData: Dispatch<SetStateAction<Product>>;
-}
-
-export default function ProductStatus({ statuses, productData, setProductData }: ProductStatusProps) {
+  setProductData: (data: Product) => void;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -21,20 +29,21 @@ export default function ProductStatus({ statuses, productData, setProductData }:
             <Label htmlFor="status">Status</Label>
             <Select
               onValueChange={(value) => setProductData({ ...productData, status: value.toUpperCase() })}
-              value={productData.status}
+              value={productData.status || ""}
             >
               <SelectTrigger id="status" aria-label="Select status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                {statuses.length > 0 && statuses.map((status, index) => (
-                  <SelectItem
-                    key={index}
-                    value={status.toUpperCase()}
-                  >
-                    {status}
-                  </SelectItem>
-                ))}
+                {statuses.length > 0 ? (
+                  statuses.map((status, index) => (
+                    <SelectItem key={index} value={status.toUpperCase()}>
+                      {status}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem disabled>No statuses available</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>

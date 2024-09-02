@@ -5,9 +5,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-08-16',
 });
 
-export async function createCheckoutSession(user, product) {
+export async function createCheckoutSession(user, product, variant, quantity) {
   try {
-    console.log('Criando sessão de checkout para o usuário:', user.id, 'e produto:', product.id);
+    console.log('Criando sessão de checkout para o usuário:', user.id, 'e variação do produto:', variant.id);
     
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -17,17 +17,17 @@ export async function createCheckoutSession(user, product) {
           price_data: {
             currency: 'brl',
             product_data: {
-              name: product.name,
+              name: `${product.name} - ${variant.color || ''} ${variant.size || ''}`,
             },
             unit_amount: product.price * 100,
           },
-          quantity: 1,
+          quantity,
         },
       ],
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
-    });
+    });    
     
     console.log('Sessão de checkout criada com sucesso:', session.id);
     return session;

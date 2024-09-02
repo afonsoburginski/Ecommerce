@@ -4,6 +4,9 @@ CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'CUSTOMER');
 -- CreateEnum
 CREATE TYPE "ProductStatus" AS ENUM ('DRAFT', 'ACTIVE', 'ARCHIVED');
 
+-- CreateEnum
+CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'PAID', 'SHIPPED', 'RECEIVED', 'CANCELED', 'FAILED');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -11,7 +14,12 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "role" "UserRole" NOT NULL DEFAULT 'CUSTOMER',
+    "address" TEXT,
+    "phone" TEXT,
+    "cpf" TEXT,
+    "dateOfBirth" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "stripeCustomerId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -23,6 +31,7 @@ CREATE TABLE "Product" (
     "description" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "stock" INTEGER NOT NULL,
+    "images" TEXT[],
     "status" "ProductStatus" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -63,8 +72,9 @@ CREATE TABLE "Order" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "total" DOUBLE PRECISION NOT NULL,
+    "status" "OrderStatus" NOT NULL DEFAULT 'PENDING',
     "userId" INTEGER NOT NULL,
-    "transactionId" INTEGER,
+    "transactionId" TEXT,
 
     CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
 );
@@ -78,17 +88,6 @@ CREATE TABLE "OrderItem" (
     "orderId" INTEGER NOT NULL,
 
     CONSTRAINT "OrderItem_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Transaction" (
-    "id" SERIAL NOT NULL,
-    "stripeId" TEXT NOT NULL,
-    "amount" DOUBLE PRECISION NOT NULL,
-    "status" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -121,12 +120,6 @@ CREATE UNIQUE INDEX "Variant_sku_key" ON "Variant"("sku");
 CREATE UNIQUE INDEX "Color_name_key" ON "Color"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Order_transactionId_key" ON "Order"("transactionId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Transaction_stripeId_key" ON "Transaction"("stripeId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "_ProductToTag_AB_unique" ON "_ProductToTag"("A", "B");
 
 -- CreateIndex
@@ -143,9 +136,6 @@ ALTER TABLE "Variant" ADD CONSTRAINT "Variant_productId_fkey" FOREIGN KEY ("prod
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

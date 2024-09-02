@@ -1,28 +1,21 @@
-// Example: src/components/product/ProductDetails.tsx
+"use client";
 
-import { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-interface ProductDetailsProps {
+export default function ProductDetails({
+  productData,
+  setProductData,
+}: {
   productData: Product;
-  setProductData: Dispatch<SetStateAction<Product>>;
-}
-
-export default function ProductDetails({ productData, setProductData }: ProductDetailsProps) {
-  const [priceInput, setPriceInput] = useState<string>(formatPrice(productData.price || 0));
-
-  useEffect(() => {
-    setPriceInput(formatPrice(productData.price || 0));
-  }, [productData.price]);
-
+  setProductData: (data: Product) => void;
+}) {
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.replace(/[^\d]/g, '');
     const priceValue = Number(inputValue) / 100;
     setProductData({ ...productData, price: priceValue });
-    setPriceInput(formatPrice(priceValue));
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,16 +26,14 @@ export default function ProductDetails({ productData, setProductData }: ProductD
     setProductData({ ...productData, description: e.target.value });
   };
 
-  function formatPrice(value: number): string {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
-  }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Product Details</CardTitle>
         <CardDescription>
-          {productData.name ? "Edit the product details below." : "Enter the product details below."}
+          {productData?.name
+            ? "Edit the product details below."
+            : "Enter the product details below."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -54,7 +45,7 @@ export default function ProductDetails({ productData, setProductData }: ProductD
                 id="name"
                 type="text"
                 className="w-full"
-                value={productData.name}
+                value={productData?.name || ""}
                 onChange={handleNameChange}
               />
             </div>
@@ -64,7 +55,7 @@ export default function ProductDetails({ productData, setProductData }: ProductD
                 id="price"
                 type="text"
                 className="w-full"
-                value={priceInput}
+                value={productData?.price.toFixed(2) || "0.00"}
                 onChange={handlePriceChange}
               />
             </div>
@@ -73,7 +64,7 @@ export default function ProductDetails({ productData, setProductData }: ProductD
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              value={productData.description}
+              value={productData?.description || ""}
               onChange={handleDescriptionChange}
               className="min-h-32"
             />
@@ -82,4 +73,5 @@ export default function ProductDetails({ productData, setProductData }: ProductD
       </CardContent>
     </Card>
   );
+  
 }

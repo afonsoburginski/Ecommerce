@@ -13,6 +13,7 @@ declare global {
   };
 
   interface Product {
+    variants: never[];
     images: any;
     id: number;
     name: string;

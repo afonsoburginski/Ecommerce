@@ -11,9 +11,15 @@ export function TopSellingProductsCard() {
       try {
         const response = await fetch('/api/products/top-sellers');
         const data = await response.json();
-        setTopSellingProducts(data);
+        if (Array.isArray(data)) {
+          setTopSellingProducts(data);
+        } else {
+          console.error('API returned a non-array response:', data);
+          setTopSellingProducts([]);
+        }
       } catch (error) {
         console.error('Erro ao buscar os produtos mais vendidos:', error);
+        setTopSellingProducts([]);
       }
     }
 
@@ -26,26 +32,30 @@ export function TopSellingProductsCard() {
         <CardTitle>Top 5 Produtos Mais Vendidos</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-8">
-        {topSellingProducts.map((product, index) => (
-          <div key={index} className="flex items-center gap-4">
-            <Avatar className="hidden h-9 w-9 sm:flex">
-              {product.images.length > 0 ? (
-                <AvatarImage src={product.images[0]} alt={product.name} />
-              ) : (
-                <AvatarFallback>{product.name.charAt(0)}</AvatarFallback>
-              )}
-            </Avatar>
-            <div className="grid gap-1">
-              <p className="text-sm font-medium leading-none">
-                {product.name}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {product.orderItems.length} vendidos
-              </p>
+        {Array.isArray(topSellingProducts) && topSellingProducts.length > 0 ? (
+          topSellingProducts.map((product, index) => (
+            <div key={index} className="flex items-center gap-4">
+              <Avatar className="hidden h-9 w-9 sm:flex">
+                {product.images.length > 0 ? (
+                  <AvatarImage src={product.images[0]} alt={product.name} />
+                ) : (
+                  <AvatarFallback>{product.name.charAt(0)}</AvatarFallback>
+                )}
+              </Avatar>
+              <div className="grid gap-1">
+                <p className="text-sm font-medium leading-none">
+                  {product.name}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {product.orderItems.length} vendidos
+                </p>
+              </div>
+              <Badge variant="success">{`R$${product.price.toFixed(2)}`}</Badge>
             </div>
-            <Badge variant="success">{`R$${product.price.toFixed(2)}`}</Badge>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p>Nenhum produto encontrado.</p>
+        )}
       </CardContent>
     </Card>
   );

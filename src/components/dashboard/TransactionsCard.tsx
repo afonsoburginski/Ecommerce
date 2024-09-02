@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import DataTable from "@/components/dataTable/DataTable";
+import DataTable from "@/components/dataTable/";
 
 export function TransactionsCard() {
   return (
@@ -23,7 +23,7 @@ export function TransactionsCard() {
         </Button>
       </CardHeader>
       <CardContent>
-        <DataTable />
+        <DataTable.Root />
       </CardContent>
     </Card>
   );

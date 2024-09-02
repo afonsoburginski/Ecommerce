@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import DataTable from "@/components/dataTable/DataTable"; // Import the DataTable component
+import DataTable from "@/components/dataTable";
 
 // Dados de exemplo simulando informações do Stripe
 const stripeAccount = {
@@ -111,7 +111,7 @@ export default function Payments() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <DataTable /> {/* Use the DataTable component here */}
+                  <DataTable.Root />
                 </div>
               </CardContent>
             </Card>

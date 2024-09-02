@@ -1,7 +1,9 @@
+// src/components/dashboard/CardGrid.tsx
 'use client';
+
+import React, { useEffect, useState } from 'react';
 import {
   Activity,
-  ArrowUpRight,
   CreditCard,
   DollarSign,
   Users,
@@ -9,43 +11,69 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
-
-const totalRevenue = 5320;
-const usersToday = 1320;
-const totalSales = 24500;
-const activeNow = 573;
-
-const cardData = [
-  {
-    title: "Total Revenue",
-    icon: DollarSign,
-    value: `$${totalRevenue.toLocaleString()}`,
-    percentage: "+12.3 from last month",
-  },
-  {
-    title: "Users Today",
-    icon: Users,
-    value: usersToday.toLocaleString(),
-  },
-  {
-    title: "Total Sales",
-    icon: CreditCard,
-    value: `$${totalSales.toLocaleString()}`,
-  },
-  {
-    title: "Active Now",
-    icon: Activity,
-    value: activeNow.toLocaleString(),
-    percentage: "+201 since last hour",
-  },
-];
-
 export function CardGrid() {
+  const [data, setData] = useState({
+    totalSalesAmount: 0,
+    balanceAvailable: 0,
+    balancePending: 0,
+    totalSalesCount: 0,
+  });
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/stripe');
+        const result = await response.json();
+        setData({
+          totalSalesAmount: result.totalSalesAmount,
+          balanceAvailable: result.balanceAvailable,
+          balancePending: result.balancePending,
+          totalSalesCount: result.totalSalesCount,
+        });
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(amount);
+  };
+
+  const cardData = [
+    {
+      title: "Total Revenue",
+      icon: DollarSign,
+      value: formatCurrency(data.balanceAvailable + data.balancePending),
+      percentage: "+12.3 from last month",
+    },
+    {
+      title: "Users Today",
+      icon: Users,
+      value: "1320",
+    },
+    {
+      title: "Total Sales",
+      icon: CreditCard,
+      value: formatCurrency(data.totalSalesAmount),
+    },
+    {
+      title: "Active Now",
+      icon: Activity,
+      value: "573",
+      percentage: "+201 since last hour",
+    },
+  ];
+
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-4">
       {cardData.map((data, index) => (

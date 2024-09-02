@@ -8,69 +8,59 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-11-15',
 });
 
+// Função auxiliar para lidar com erros
+const handleError = (error: any, message: string, status: number = 500) => {
+  console.error(message, error);
+  return NextResponse.json({ error: message }, { status });
+};
+
+// GET: Obter todos os usuários
 export async function GET() {
-  try {
-    const users = await prisma.user.findMany();
-    return NextResponse.json(users);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
-  }
+  return prisma.user.findMany()
+    .then(users => NextResponse.json(users))
+    .catch(error => handleError(error, 'Failed to fetch users'));
 }
 
+// POST: Criar um novo usuário
 export async function POST(request: Request) {
   const { name, email, password, role, address, phone, cpf, dateOfBirth } = await request.json();
-  
-  try {
-    const stripeCustomer = await stripe.customers.create({
-      name,
-      email,
-    });
 
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password,
-        role,
-        address,
-        phone,
-        cpf,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-        stripeCustomerId: stripeCustomer.id,
-        createdAt: new Date(),
-      },
-    });
-
-    return NextResponse.json(newUser);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
-  }
+  return stripe.customers.create({ name, email })
+    .then(stripeCustomer =>
+      prisma.user.create({
+        data: {
+          name,
+          email,
+          password,
+          role,
+          address,
+          phone,
+          cpf,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+          stripeCustomerId: stripeCustomer.id,
+          createdAt: new Date(),
+        },
+      })
+    )
+    .then(newUser => NextResponse.json(newUser))
+    .catch(error => handleError(error, 'Failed to create user'));
 }
 
+// DELETE: Deletar um usuário
 export async function DELETE(request: Request) {
   const { id } = await request.json();
-  
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id },
-    });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
+  return prisma.user.findUnique({ where: { id } })
+    .then(user => {
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
 
-    if (user.stripeCustomerId) {
-      await stripe.customers.del(user.stripeCustomerId);
-    }
-
-    await prisma.user.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ message: 'User deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
-  }
+      return (user.stripeCustomerId
+        ? stripe.customers.del(user.stripeCustomerId)
+        : Promise.resolve()
+      ).then(() => prisma.user.delete({ where: { id } }))
+    })
+    .then(() => NextResponse.json({ message: 'User deleted successfully' }))
+    .catch(error => handleError(error, 'Failed to delete user'));
 }

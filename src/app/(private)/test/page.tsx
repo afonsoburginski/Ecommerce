@@ -54,22 +54,31 @@ export default function ProductPage() {
       alert("Please select a user first.");
       return;
     }
-
+  
     const variant = selectedVariant[productId];
+  
     if (!variant || !variant.color || !variant.size) {
       alert("Please select a variant before purchasing.");
       return;
     }
-
+  
+    const selectedVariantProduct = products
+      .find((product) => product.id === productId)
+      .variants.find((v) => v.color === variant.color && v.size === variant.size);
+  
+    if (!selectedVariantProduct) {
+      alert("The selected variant does not exist.");
+      return;
+    }
+  
     setLoading(true);
     try {
       const response = await axios.post("/api/stripe/checkout", {
         productId,
         userId: selectedUser.id,
-        variantId: variant.sku, // Use SKU or variant ID to identify the variant being purchased
+        variantId: selectedVariantProduct.id,
         quantity,
       });
-      console.log("Checkout session created, redirecting to:", response.data.url);
       router.push(response.data.url);
     } catch (error) {
       console.error("Error initiating purchase:", error.response?.data || error.message);
@@ -78,7 +87,7 @@ export default function ProductPage() {
       setLoading(false);
     }
   };
-
+  
   const handleColorChange = (productId, color) => {
     setSelectedVariant((prev) => ({
       ...prev,

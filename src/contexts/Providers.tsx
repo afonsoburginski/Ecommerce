@@ -3,7 +3,7 @@
 
 import React, { ReactNode } from 'react';
 import { ThemeProvider } from 'next-themes';
-import { StripeTransactionsProvider } from './StripeTransactionsContext';
+import { TransactionsProvider } from './TransactionsContext';
 import { ProductProvider } from './ProductContext';
 import { CustomerProvider } from './CustomerContext';
 import { ToastProvider } from '@/components/ui/toast';
@@ -13,7 +13,7 @@ export const Providers: React.FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <ThemeProvider attribute="class" defaultTheme="system">
       <AuthProvider>
-        <StripeTransactionsProvider>
+        <TransactionsProvider>
           <ProductProvider>
             <CustomerProvider>
               <ToastProvider>
@@ -21,7 +21,7 @@ export const Providers: React.FC<{ children: ReactNode }> = ({ children }) => {
               </ToastProvider>
             </CustomerProvider>
           </ProductProvider>
-        </StripeTransactionsProvider>
+        </TransactionsProvider>
       </AuthProvider>
     </ThemeProvider>
   );

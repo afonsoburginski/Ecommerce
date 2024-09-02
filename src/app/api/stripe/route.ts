@@ -8,55 +8,43 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 
 export async function GET() {
   try {
+    // Listar transações de saldo
     const transactions = await stripe.balanceTransactions.list({
       limit: 100,
     });
 
-    const transactionDetails = await Promise.all(
-      transactions.data.map(async (txn) => {
-        try {
-          const charge = txn.source
-            ? await stripe.charges.retrieve(txn.source as string)
-            : null;
+    let totalSalesAmount = 0; // Valor bruto das vendas
+    let totalSalesCount = 0; // Quantidade de vendas
 
-          let customer = null;
-          if (charge?.customer && typeof charge.customer === "string") {
-            customer = await stripe.customers.retrieve(charge.customer);
-          }
+    // Calcular o valor bruto das vendas e a quantidade de vendas
+    transactions.data.forEach((txn) => {
+      if (txn.type === 'charge' && txn.amount > 0) {
+        totalSalesAmount += txn.amount / 100; // Converte para dólares/reais
+        totalSalesCount += 1;
+      }
+    });
 
-          return {
-            id: txn.id,
-            amount: txn.amount / 100,
-            currency: txn.currency,
-            status: txn.type,
-            description: charge?.description || "N/A",
-            customer: customer ? (customer as Stripe.Customer).name : "N/A",
-            email: customer ? (customer as Stripe.Customer).email : "N/A",
-            date: new Date(txn.created * 1000).toLocaleString(),
-            cardLast4: charge?.payment_method_details?.card?.last4 || "N/A",
-          };
-        } catch (error) {
-          console.error(`Failed to retrieve charge or customer for transaction ${txn.id}:`, error);
-          return {
-            id: txn.id,
-            amount: txn.amount / 100,
-            currency: txn.currency,
-            status: txn.type,
-            description: "N/A",
-            customer: "N/A",
-            email: "N/A",
-            date: new Date(txn.created * 1000).toLocaleString(),
-            cardLast4: "N/A",
-          };
-        }
-      })
+    // Obter saldo disponível e saldo futuro (líquido)
+    const balance = await stripe.balance.retrieve();
+    const balanceAvailable = balance.available.reduce(
+      (acc, bal) => acc + bal.amount / 100,
+      0
+    );
+    const balancePending = balance.pending.reduce(
+      (acc, bal) => acc + bal.amount / 100,
+      0
     );
 
-    return NextResponse.json(transactionDetails);
+    return NextResponse.json({
+      totalSalesAmount, // Valor bruto em vendas
+      balanceAvailable, // Receita líquida disponível
+      balancePending,   // Receita pendente
+      totalSalesCount,  // Quantidade de vendas
+    });
   } catch (error) {
-    console.error("Error fetching Stripe transactions:", error);
+    console.error("Error fetching Stripe data:", error);
     return NextResponse.json(
-      { error: "Failed to fetch transactions", details: error.message },
+      { error: "Failed to fetch data", details: error.message },
       { status: 500 }
     );
   }
