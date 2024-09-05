@@ -1,6 +1,5 @@
-// src/app/api/stripe/sync-customer.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { syncStripeCustomer } from '@/services/syncStripeCustomer';
+import { syncStripeCustomer } from '@/services/stripe';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -10,7 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const stripeCustomerId = await syncStripeCustomer(userId);
       res.status(200).json({ stripeCustomerId });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const errorMessage = (error instanceof Error) ? error.message : 'Internal server error';
+      res.status(500).json({ error: errorMessage });
     }
   } else {
     res.setHeader('Allow', 'POST');

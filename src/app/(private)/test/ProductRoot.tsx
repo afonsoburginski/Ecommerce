@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import Product from "@/components/Product";
+import Product from "@/components/product";
 
 export default function ProductRoot() {
   const [users, setUsers] = useState([]);

@@ -1,16 +1,6 @@
 import ProductRoot from "./ProductRoot";
-import ProductDetails from "./ProductDetails";
-import ProductCategory from "./ProductCategory";
-import ProductStatus from "./ProductStatus";
-import ProductImages from "./ProductImages";
-import ProductStock from "./ProductStock";
 
-const ProductForm = Object.assign(ProductRoot, {
-  Details: ProductDetails,
-  Category: ProductCategory,
-  Status: ProductStatus,
-  Images: ProductImages,
-  Stock: ProductStock,
-});
+// Como todos os subcomponentes estão dentro do ProductRoot, podemos exportar apenas o ProductRoot diretamente.
+const Product = ProductRoot;
 
-export default ProductForm;
+export default Product;

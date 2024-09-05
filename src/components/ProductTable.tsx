@@ -1,4 +1,3 @@
-// src/components/ProductTable.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -35,12 +34,22 @@ export default function ProductTable({ status }: { status: string }) {
   const router = useRouter();
   const { products, isLoading, isError } = useProducts();
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading products: {isError.toString()}</div>;
+  }
+
+  if (!Array.isArray(products) || products.length === 0) {
+    return <div>No products available.</div>;
+  }
+
   const normalizedStatus = status.toUpperCase();
   const filteredProducts = normalizedStatus === "ALL" 
     ? products 
-    : products.filter((product) => {
-        return product.status.toUpperCase() === normalizedStatus;
-      });
+    : products.filter((product) => product.status.toUpperCase() === normalizedStatus);
 
   const getBadgeVariant = (status: string) => {
     switch (status.toUpperCase()) {

@@ -39,7 +39,13 @@ interface FormattedOrder {
   orderItems: OrderItem[];
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`An error occurred: ${res.statusText}`);
+  }
+  return res.json();
+};
 
 export function useFetchTransactions() {
   const { data, error, mutate } = useSWR<Order[]>('/api/orders', fetcher, {
@@ -49,19 +55,22 @@ export function useFetchTransactions() {
     refreshInterval: 10000,
   });
 
-  const formattedData: FormattedOrder[] = data?.map(order => ({
-    id: order.id,
-    amount: order.total,
-    status: order.status,
-    email: order.user.email,
-    customer: order.user.name,
-    phone: order.user.phone,
-    address: order.user.address,
-    date: new Date(order.createdAt).toLocaleDateString(),
-    transactionId: order.transactionId,
-    paymentMethod: order.paymentMethod,
-    orderItems: order.orderItems,
-  })) || [];
+  // Ensure the data is an array before calling map
+  const formattedData: FormattedOrder[] = Array.isArray(data)
+    ? data.map(order => ({
+        id: order.id,
+        amount: order.total,
+        status: order.status,
+        email: order.user.email,
+        customer: order.user.name,
+        phone: order.user.phone,
+        address: order.user.address,
+        date: new Date(order.createdAt).toLocaleDateString(),
+        transactionId: order.transactionId,
+        paymentMethod: order.paymentMethod,
+        orderItems: order.orderItems,
+      }))
+    : [];
 
   return {
     orders: formattedData,

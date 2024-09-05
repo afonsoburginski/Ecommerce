@@ -1,30 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useProductData } from '@/hooks/useProductData';
 
 export function TopSellingProductsCard() {
-  const [topSellingProducts, setTopSellingProducts] = useState([]);
-
-  useEffect(() => {
-    async function fetchTopSellingProducts() {
-      try {
-        const response = await fetch('/api/products/top-sellers');
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setTopSellingProducts(data);
-        } else {
-          console.error('API returned a non-array response:', data);
-          setTopSellingProducts([]);
-        }
-      } catch (error) {
-        console.error('Erro ao buscar os produtos mais vendidos:', error);
-        setTopSellingProducts([]);
-      }
-    }
-
-    fetchTopSellingProducts();
-  }, []);
+  const { topSellingProducts } = useProductData();
 
   return (
     <Card x-chunk="dashboard-01-chunk-5">
@@ -36,7 +17,7 @@ export function TopSellingProductsCard() {
           topSellingProducts.map((product, index) => (
             <div key={index} className="flex items-center gap-4">
               <Avatar className="hidden h-9 w-9 sm:flex">
-                {product.images.length > 0 ? (
+                {product.images?.length > 0 ? (
                   <AvatarImage src={product.images[0]} alt={product.name} />
                 ) : (
                   <AvatarFallback>{product.name.charAt(0)}</AvatarFallback>
@@ -47,7 +28,7 @@ export function TopSellingProductsCard() {
                   {product.name}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {product.orderItems.length} vendidos
+                  {product._count?.orderItems || 0} vendidos
                 </p>
               </div>
               <Badge variant="success">{`R$${product.price.toFixed(2)}`}</Badge>

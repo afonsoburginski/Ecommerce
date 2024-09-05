@@ -25,13 +25,37 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    console.log('Dados recebidos para criar produto:', body);
+    const formData = await request.formData();
+    const stock = parseInt(formData.get('stock') as string);
 
-    const { name, description, price, stock, categories, tags, status, variants, images } = body;
+    if (isNaN(stock)) {
+      return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
+    }
+    
+    const file = formData.get('image') as File | null;
+    console.log('File received:', file);
 
-    if (!name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const price = parseFloat(formData.get('price') as string);
+    const categories = JSON.parse(formData.get('categories') as string) as number[];
+    const tags = JSON.parse(formData.get('tags') as string) as number[];
+    const status = formData.get('status') as string;
+    const variants = JSON.parse(formData.get('variants') as string) as any[];
+
+    console.log({ name, description, price, stock, categories, tags, status, variants });
+
+    if (!name || !description || isNaN(price) || isNaN(stock) || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    let imageUrl = null;
+    if (file) {
+      imageUrl = await uploadImage(file);
+      if (!imageUrl) {
+        console.error('Failed to upload image');
+        return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
+      }
     }
 
     const newProductData = {
@@ -40,12 +64,12 @@ export async function POST(request: Request) {
       price,
       stock,
       status,
-      images,
+      images: imageUrl ? [imageUrl] : [],
       categories: {
-        connect: categories?.map((id: number) => ({ id })),
+        connect: categories.map(id => ({ id })),
       },
       tags: {
-        connect: tags?.map((id: number) => ({ id })),
+        connect: tags.map(id => ({ id })),
       },
       variants: {
         create: variants.map((variant: any) => ({
@@ -57,18 +81,17 @@ export async function POST(request: Request) {
       },
     };
 
-    console.log('Dados do produto a ser criado:', newProductData);
+    console.log('Saving new product:', newProductData);
 
     const newProduct = await prisma.product.create({
       data: newProductData,
     });
 
-    console.log('Produto criado com sucesso:', newProduct);
+    console.log('Product saved successfully');
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error: any) {
-    console.error('Erro ao criar produto:', error.message, error.stack);
     return NextResponse.json(
-      { error: 'Internal Server Error', details: error.message },
+      { error: 'Erro Interno do Servidor', details: error.message },
       { status: 500 }
     );
   }
@@ -76,22 +99,39 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    const body = await request.json();
-    const { id, name, description, price, stock, categories, tags, status, variants, images } = body;
+    const formData = await request.formData();
+    const id = parseInt(formData.get('id') as string);
+    const file = formData.get('image') as File | null;
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const price = parseFloat(formData.get('price') as string);
+    const stock = parseInt(formData.get('stock') as string);
+    const categories = JSON.parse(formData.get('categories') as string) as number[];
+    const tags = JSON.parse(formData.get('tags') as string) as number[];
+    const status = formData.get('status') as string;
+    const variants = JSON.parse(formData.get('variants') as string) as any[];
 
-    if (!id || !name || !description || typeof price !== 'number' || typeof stock !== 'number' || !status) {
+    if (!id || !name || !description || isNaN(price) || isNaN(stock) || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    let imageUrl = null;
+    if (file) {
+      imageUrl = await uploadImage(file);
+      if (!imageUrl) {
+        return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
+      }
+    }
+
     const updatedProduct = await prisma.product.update({
-      where: { id: Number(id) },
+      where: { id },
       data: {
         name,
         description,
         price,
         stock,
         status,
-        images: images || [],
+        images: imageUrl ? [imageUrl] : [],
         categories: {
           set: categories?.map((id: number) => ({ id })),
         },
@@ -100,7 +140,7 @@ export async function PUT(request: Request) {
         },
         variants: {
           deleteMany: {},
-          create: variants.map((variant: Variant) => ({
+          create: variants.map((variant: any) => ({
             sku: variant.sku,
             stock: variant.stock,
             size: variant.size,

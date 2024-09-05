@@ -1,31 +1,19 @@
 import useSWR from 'swr';
 
-interface UseProductDataResult {
-  product: Product | null;
-  products: Product[];
-  categories: Category[];
-  tags: Tag[];
-  isLoading: boolean;
-  error: Error | null;
-  mutateProducts: () => void;
-  mutateCategories: () => void;
-  mutateTags: () => void;
-}
-
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export const useProductData = (productId?: string): UseProductDataResult => {
+export const useProductData = (): UseProductDataResult => {
+  const { data: topSellingProducts, error: topSellingProductsError, mutate: mutateTopSellingProducts } = useSWR('/api/products/top-sellers', fetcher);
   const { data: productsData, error: productsError, mutate: mutateProducts } = useSWR('/api/products', fetcher);
   const { data: categoriesData, error: categoriesError, mutate: mutateCategories } = useSWR('/api/categories', fetcher);
   const { data: tagsData, error: tagsError, mutate: mutateTags } = useSWR('/api/tags', fetcher);
 
-  const product = productId ? productsData?.find((p: Product) => p.id === Number(productId)) || null : null;
-
-  const isLoading = !productsData || !categoriesData || !tagsData;
-  const error = productsError || categoriesError || tagsError;
+  const isLoading = !productsData || !categoriesData || !tagsData || !topSellingProducts;
+  const error = productsError || categoriesError || tagsError || topSellingProductsError;
 
   return {
-    product,
+    product: null, // Certifique-se de retornar `product`, mesmo que seja `null`
+    topSellingProducts: topSellingProducts || [],
     products: productsData || [],
     categories: categoriesData || [],
     tags: tagsData || [],
@@ -34,5 +22,6 @@ export const useProductData = (productId?: string): UseProductDataResult => {
     mutateProducts,
     mutateCategories,
     mutateTags,
+    mutateTopSellingProducts,
   };
 };

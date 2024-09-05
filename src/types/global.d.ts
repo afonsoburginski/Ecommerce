@@ -1,5 +1,3 @@
-// src/types/global.d.ts
-
 export {};
 
 declare global {
@@ -13,8 +11,7 @@ declare global {
   };
 
   interface Product {
-    variants: never[];
-    images: any;
+    [x: string]: any;
     id: number;
     name: string;
     status: string;
@@ -24,12 +21,47 @@ declare global {
     description: string;
     categories: { id: number; name: string }[];
     tags: { id: number; name: string }[];
+    variants: Variant[];
+    images: any; // Ajuste conforme necessário
     createdAt: string;
+  }
+
+  interface Category {
+    id: number;
+    name: string;
+  }
+
+  interface Tag {
+    id: number;
+    name: string;
+  }
+
+  interface Variant {
+    sku: string;
+    stock: number;
+    size: string;
+    color: string;
+  }
+
+  interface UseProductDataResult {
+    product: Product | null;
+    products: Product[];
+    topSellingProducts: Product[]; // Adicionando topSellingProducts
+    categories: Category[];
+    tags: Tag[];
+    isLoading: boolean;
+    error: Error | null;
+    mutateProducts: () => void;
+    mutateCategories: () => void;
+    mutateTags: () => void;
+    mutateTopSellingProducts: () => void; // Adicionando mutateTopSellingProducts
   }
 
   interface ProductContextType {
     products: Product[];
+    categories: Category[];
+    tags: Tag[];
     isLoading: boolean;
-    isError: any;
+    isError: boolean;
   }
 }

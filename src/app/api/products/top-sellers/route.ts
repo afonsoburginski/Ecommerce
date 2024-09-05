@@ -1,4 +1,3 @@
-// app/api/products/top-sellers/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
@@ -6,13 +5,26 @@ export async function GET() {
   try {
     const topSellingProducts = await prisma.product.findMany({
       take: 5,
+      where: {
+        orderItems: {
+          some: {},
+        },
+      },
       orderBy: {
         orderItems: {
           _count: 'desc',
         },
       },
-      include: {
-        orderItems: true,
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        images: true,
+        _count: {
+          select: {
+            orderItems: true,
+          },
+        },
       },
     });
 

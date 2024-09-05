@@ -1,11 +1,12 @@
-// src/services/supabaseStorage.ts
 import { supabase } from '@/lib/supabase';
 
 export async function uploadImage(file: File): Promise<string | null> {
   try {
+    const fileName = `product/${Date.now()}_${file.name}`;
+
     const { data, error } = await supabase.storage
       .from('Images')
-      .upload(`public/${Date.now()}_${file.name}`, file, {
+      .upload(fileName, file, {
         cacheControl: '3600',
         upsert: false,
       });
@@ -15,10 +16,15 @@ export async function uploadImage(file: File): Promise<string | null> {
       return null;
     }
 
-    const publicUrl = `${supabase.storageUrl}/Images/public/${data.path}`;
-    
+    const { data: publicURLData } = supabase
+      .storage
+      .from('Images')
+      .getPublicUrl(fileName);
+
+    const publicUrl = publicURLData?.publicUrl;
+
     if (!publicUrl) {
-      console.error('Erro ao obter URL pública da imagem:', data.Key);
+      console.error('Erro ao obter URL pública da imagem');
       return null;
     }
 
