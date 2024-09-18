@@ -33,8 +33,8 @@ export const DataTableActions = ({ payment }: { payment: any }) => {
             Copy payment ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>View customer</DropdownMenuItem>
-          <DropdownMenuItem onClick={handleViewDetails}>View payment details</DropdownMenuItem>
+          <DropdownMenuItem>Ver cliente</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleViewDetails}>Ver detalhes do Pagamento</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 

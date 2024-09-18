@@ -60,7 +60,7 @@ export default function Payments() {
             </div>
             <Card className="w-full">
               <CardHeader>
-                <CardTitle>Payment Methods</CardTitle>
+                <CardTitle>Método de pagamento	</CardTitle>
                 <CardDescription>
                   Your Stripe account: {stripeAccount.email}
                 </CardDescription>
@@ -104,9 +104,9 @@ export default function Payments() {
             </Card>
             <Card className="w-full">
               <CardHeader>
-                <CardTitle>Recent Transactions</CardTitle>
+                <CardTitle>Transações recentes</CardTitle>
                 <CardDescription>
-                  Overview of your latest transactions.
+                  Visão geral de suas transações mais recentes..
                 </CardDescription>
               </CardHeader>
               <CardContent>

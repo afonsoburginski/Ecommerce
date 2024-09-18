@@ -41,7 +41,7 @@ export const columns: ColumnDef<FormattedOrder>[] = [
   },
   {
     accessorKey: "customer",
-    header: "Customer",
+    header: "Cliente",
     cell: ({ row }) => <div>{row.getValue("customer")}</div>,
   },
   {
@@ -52,7 +52,7 @@ export const columns: ColumnDef<FormattedOrder>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Email
+          E-mail
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -61,7 +61,7 @@ export const columns: ColumnDef<FormattedOrder>[] = [
   },
   {
     accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
+    header: () => <div className="text-right">Quantia</div>,
     cell: ({ row }) => {
       const amount = row.getValue("amount") as number;
       const formatted = new Intl.NumberFormat("en-US", {
@@ -99,12 +99,12 @@ export const columns: ColumnDef<FormattedOrder>[] = [
   },
   {
     accessorKey: "date",
-    header: "Date",
+    header: "Data",
     cell: ({ row }) => <div>{row.getValue("date")}</div>,
   },
   {
     accessorKey: "paymentMethod",
-    header: "Payment Method",
+    header: "Método de Pagamento",
     cell: ({ row }) => {
       const paymentMethod = row.getValue("paymentMethod") as string | undefined;
       const lastFourDigits = paymentMethod ? paymentMethod.slice(-4) : "N/A";

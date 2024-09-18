@@ -1,22 +1,25 @@
+// services/stripe.ts
 import Stripe from 'stripe';
-import prisma from '@/lib/prisma';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-06-20',
 });
 
 export async function listBalanceTransactions(limit = 100) {
+  // Obter transações de saldo do Stripe
   const transactions = await stripe.balanceTransactions.list({ limit });
   let totalSalesAmount = 0;
   let totalSalesCount = 0;
 
+  // Calcular o valor total das vendas e o número de vendas
   transactions.data.forEach((txn) => {
     if (txn.type === 'charge' && txn.amount > 0) {
-      totalSalesAmount += txn.amount / 100;
+      totalSalesAmount += txn.amount / 100; // Convertendo de centavos para reais
       totalSalesCount += 1;
     }
   });
 
+  // Obter o saldo disponível e pendente
   const balance = await stripe.balance.retrieve();
   const balanceAvailable = balance.available.reduce(
     (acc, bal) => acc + bal.amount / 100,
@@ -27,63 +30,41 @@ export async function listBalanceTransactions(limit = 100) {
     0
   );
 
+  // Obter o número de clientes cadastrados no Stripe
+  const customers = await stripe.customers.list();
+  const totalCustomers = customers.data.length;
+
   return {
     totalSalesAmount,
     balanceAvailable,
     balancePending,
     totalSalesCount,
+    totalCustomers, // Adiciona o número total de clientes
   };
 }
 
-export async function createCheckoutSession(user: { stripeCustomerId: any; }, product: { name: any; price: number; }, variant: { color: any; size: any; }, quantity: any) {
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    customer: user.stripeCustomerId,
-    line_items: [
-      {
-        price_data: {
-          currency: 'brl',
-          product_data: {
-            name: `${product.name} - ${variant.color || ''} ${variant.size || ''}`,
-          },
-          unit_amount: product.price * 100,
-        },
-        quantity,
-      },
-    ],
-    mode: 'payment',
-    success_url: `${process.env.NEXT_PUBLIC_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
-  });
+export async function getDailySales(limit = 100) {
+  const transactions = await stripe.balanceTransactions.list({ limit });
 
-  return session;
-}
+  // Agrupar transações por data
+  const salesByDay = transactions.data.reduce((acc, txn) => {
+    if (txn.type === 'charge' && txn.amount > 0) {
+      const date = new Date(txn.created * 1000).toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      if (!acc[date]) {
+        acc[date] = { total: 0, count: 0 }; // Inicializar total e contador
+      }
+      acc[date].total += txn.amount / 100; // Convertendo de centavos para reais
+      acc[date].count += 1; // Contador de transações
+    }
+    return acc;
+  }, {});
 
-export async function syncStripeCustomer(userId: number) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  // Converter o resultado em um array de objetos
+  const dailySales = Object.keys(salesByDay).map(date => ({
+    date,
+    total: salesByDay[date].total,
+    transactionsCount: salesByDay[date].count, // Adicionar número de transações
+  }));
 
-  if (!user) throw new Error('Usuário não encontrado');
-
-  if (user.stripeCustomerId) return user.stripeCustomerId;
-
-  const customer = await stripe.customers.create({ name: user.name, email: user.email });
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: { stripeCustomerId: customer.id },
-  });
-
-  return customer.id;
-}
-
-export async function retrieveSession(sessionId: string) {
-  return await stripe.checkout.sessions.retrieve(sessionId);
-}
-
-export async function retrieveCharge(chargeId: string) {
-  return await stripe.charges.retrieve(chargeId);
-}
-
-export async function retrieveCustomer(customerId: string) {
-  return await stripe.customers.retrieve(customerId);
+  return dailySales;
 }

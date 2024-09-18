@@ -1,6 +1,3 @@
-// schema.prisma
-
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,39 +8,80 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id                Int        @id @default(autoincrement())
-  email             String     @unique
-  password          String
-  name              String
-  role              UserRole   @default(CUSTOMER)
-  address           String?
-  phone             String?
-  cpf               String?
-  dateOfBirth       DateTime?
-  orders            Order[]
-  createdAt         DateTime   @default(now())
-  stripeCustomerId  String?
-}
-
-enum UserRole {
-  ADMIN
-  CUSTOMER
-}
-
 model Product {
-  id          Int       @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   name        String
   description String
-  price       Float
+  price       Int
   stock       Int
   images      String[]
-  categories  Category[]
-  orderItems  OrderItem[]
-  tags        Tag[]
   status      ProductStatus
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime      @default(now())
+  orderItems  OrderItem[]
   variants    Variant[]
+  categories  Category[]    @relation("CategoryToProduct")
+  tags        Tag[]         @relation("ProductToTag")
+}
+
+model Variant {
+  id        Int         @id @default(autoincrement())
+  sku       String      @unique
+  stock     Int
+  size      String?
+  color     String?
+  productId Int
+  OrderItem OrderItem[]
+  product   Product     @relation(fields: [productId], references: [id])
+}
+
+model Color {
+  id      Int    @id @default(autoincrement())
+  name    String @unique
+  hexCode String
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[] @relation("CategoryToProduct")
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  email            String   @unique
+  name             String
+  createdAt        DateTime @default(now())
+  stripeCustomerId String?
+  updatedAt        DateTime @updatedAt
+  orders           Order[]
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  createdAt     DateTime    @default(now())
+  status        OrderStatus @default(PENDING)
+  userId        Int
+  transactionId String?
+  user          User        @relation(fields: [userId], references: [id])
+  orderItems    OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  price     Float
+  productId Int
+  orderId   Int
+  variantId Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+  variant   Variant @relation(fields: [variantId], references: [id])
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[] @relation("ProductToTag")
 }
 
 enum ProductStatus {
@@ -52,53 +90,6 @@ enum ProductStatus {
   ARCHIVED
 }
 
-model Variant {
-  id        Int     @id @default(autoincrement())
-  sku       String  @unique
-  stock     Int
-  size      String?
-  color     String?
-  product   Product @relation(fields: [productId], references: [id])
-  productId Int
-
-  OrderItem OrderItem[]
-}
-
-model Color {
-  id       Int      @id @default(autoincrement())
-  name     String   @unique
-  hexCode  String
-}
-
-model Category {
-  id       Int       @id @default(autoincrement())
-  name     String
-  products Product[]
-}
-
-model Order {
-  id            Int            @id @default(autoincrement())
-  createdAt     DateTime       @default(now())
-  status        OrderStatus    @default(PENDING)
-  user          User           @relation(fields: [userId], references: [id])
-  userId        Int
-  transactionId String?
-  orderItems    OrderItem[]
-}
-
-model OrderItem {
-  id        Int     @id @default(autoincrement())
-  quantity  Int
-  price     Float
-  product   Product @relation(fields: [productId], references: [id])
-  productId Int
-  order     Order   @relation(fields: [orderId], references: [id])
-  orderId   Int
-  variant   Variant @relation(fields: [variantId], references: [id])
-  variantId Int
-}
-
-
 enum OrderStatus {
   PENDING
   PAID
@@ -106,10 +97,4 @@ enum OrderStatus {
   RECEIVED
   CANCELED
   FAILED
-}
-
-model Tag {
-  id       Int       @id @default(autoincrement())
-  name     String
-  products Product[]
 }

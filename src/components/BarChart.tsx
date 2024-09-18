@@ -1,59 +1,71 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import React, { useEffect, useState } from "react";
+import { Bar, BarChart, CartesianGrid, XAxis, Tooltip } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer } from "@/components/ui/chart";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
+// Função para gerar todos os dias do mês
+function generateDaysInMonth(year, month) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, day) => {
+    const date = new Date(year, month, day + 1).toISOString().split("T")[0];
+    return { date, total: 0 }; // Total `0` para dias sem vendas
+  });
+  return days;
+}
 
-} from "@/components/ui/chart"
+// Função para mesclar os dados de vendas com os dias do mês
+function mergeSalesWithDays(salesData, year, month) {
+  const daysInMonth = generateDaysInMonth(year, month);
+  return daysInMonth.map((day) => {
+    const saleForDay = salesData.find((sale) => sale.date === day.date);
+    return saleForDay ? saleForDay : { ...day, transactionsCount: 0 }; // Garantir que o número de transações seja 0 para dias sem vendas
+  });
+}
 
-  const chartData = [
-    { date: "2024-04-01", total: 372 },
-    { date: "2024-04-02", total: 277 },
-    { date: "2024-04-03", total: 287 },
-    { date: "2024-04-04", total: 502 },
-    { date: "2024-04-05", total: 663 },
-    { date: "2024-04-06", total: 641 },
-    { date: "2024-04-07", total: 425 },
-    { date: "2024-04-08", total: 729 },
-    { date: "2024-04-09", total: 169 },
-    { date: "2024-04-10", total: 451 },
-  ]
 
 export default function Chart() {
+  const [chartData, setChartData] = useState([]);
+
+  useEffect(() => {
+    async function fetchDailySales() {
+      try {
+        const response = await fetch("/api/stripe/sales");
+        const salesData = await response.json();
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth();
+        const fullData = mergeSalesWithDays(salesData, currentYear, currentMonth);
+        setChartData(fullData);
+      } catch (error) {
+        console.error("Erro ao buscar dados de vendas diárias:", error);
+      }
+    }
+
+    fetchDailySales();
+  }, []);
 
   return (
     <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
-          <CardTitle>Sales per day</CardTitle>
+          <CardTitle>Vendas por dia</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
-        <ChartContainer
-          config={chartData}
-          className="aspect-auto h-[250px] w-full"
-        >
+        <ChartContainer config={chartData} className="aspect-auto h-[250px] w-full">
           <BarChart
             accessibilityLayer
             data={chartData}
             margin={{
-              left: 12,
-              right: 12,
+              top: 5,
+              right: 5,
+              left: 5,
+              bottom: 5,
             }}
+            barSize={30}
           >
-            <CartesianGrid vertical={false} />
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
               tickLine={false}
@@ -61,32 +73,40 @@ export default function Chart() {
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(value) => {
-                const date = new Date(value)
-                return date.toLocaleDateString("en-US", {
+                const date = new Date(value);
+                return date.toLocaleDateString("pt-BR", {
                   month: "short",
                   day: "numeric",
-                })
+                });
               }}
             />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  className="w-[150px]"
-                  nameKey="views"
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  }}
-                />
-              }
+            <Tooltip
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const { date, total, transactionsCount } = payload[0].payload;
+                  return (
+                    <div className="custom-tooltip bg-white p-2 border border-gray-300 rounded shadow-lg">
+                      <p>{`Data: ${new Date(date).toLocaleDateString("pt-BR", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}`}</p>
+                      <p>{total === 0 ? "Sem vendas" : `Vendas: R$ ${total}`}</p>
+                      <p>{`Transações: ${transactionsCount}`}</p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
             />
-            <Bar dataKey="total" fill="var(--color-bar)" />
+            <Bar
+              dataKey="transactionsCount" // Alterar para exibir o número de transações
+              fill="var(--color-bar)"
+              radius={[8, 8, 0, 0]}
+            />
           </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

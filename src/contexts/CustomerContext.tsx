@@ -1,4 +1,3 @@
-// src/contexts/CustomerContext.tsx
 "use client";
 
 import React, { createContext, ReactNode, useContext } from 'react';
@@ -6,8 +5,6 @@ import { useCustomerData } from '@/hooks/useCustomerData';
 
 interface CustomerContextType {
   customers: any[];
-  addCustomer: (newCustomer: { name: string, email: string, password: string, role: string }) => Promise<void>;
-  deleteCustomer: (customerId: number) => Promise<void>;
   error: any;
 }
 

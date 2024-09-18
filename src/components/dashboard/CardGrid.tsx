@@ -1,19 +1,14 @@
-// src/components/dashboard/CardGrid.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { Activity, CreditCard, DollarSign, Users, Info } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Activity,
-  CreditCard,
-  DollarSign,
-  Users,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function CardGrid() {
   const [data, setData] = useState({
@@ -21,6 +16,7 @@ export function CardGrid() {
     balanceAvailable: 0,
     balancePending: 0,
     totalSalesCount: 0,
+    totalCustomers: 0,
   });
 
   useEffect(() => {
@@ -33,9 +29,10 @@ export function CardGrid() {
           balanceAvailable: result.balanceAvailable,
           balancePending: result.balancePending,
           totalSalesCount: result.totalSalesCount,
+          totalCustomers: result.totalCustomers,
         });
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error('Falha ao buscar dados:', error);
       }
     }
 
@@ -51,49 +48,61 @@ export function CardGrid() {
 
   const cardData = [
     {
-      title: "Total Revenue",
+      title: 'Receita Total',
       icon: DollarSign,
       value: formatCurrency(data.balanceAvailable + data.balancePending),
-      percentage: "+12.3 from last month",
+      percentage: '+12.3 desde o mês passado',
+      tooltip: 'Soma do saldo disponível e saldo pendente das vendas.',
     },
     {
-      title: "Users Today",
+      title: 'Clientes Totais',
       icon: Users,
-      value: "1320",
+      value: data.totalCustomers,
+      tooltip: 'Número total de clientes cadastrados.',
     },
     {
-      title: "Total Sales",
+      title: 'Vendas Totais',
       icon: CreditCard,
-      value: formatCurrency(data.totalSalesAmount),
+      value: formatCurrency(data.totalSalesAmount), // Valor bruto das vendas
+      tooltip: 'Valor bruto acumulado de todas as vendas.',
     },
     {
-      title: "Active Now",
+      title: 'Ativos Agora',
       icon: Activity,
-      value: "573",
-      percentage: "+201 since last hour",
+      value: '573',
+      percentage: '+201 na última hora',
+      tooltip: 'Número de usuários ativos no momento.',
     },
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-4">
-      {cardData.map((data, index) => (
-        <Card key={index} x-chunk={`dashboard-01-chunk-${index}`}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {data.title}
-            </CardTitle>
-            <data.icon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data.value}</div>
-            {data.percentage && (
-              <p className="text-xs text-muted-foreground">
-                {data.percentage}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <TooltipProvider>
+      <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-4">
+        {cardData.map((data, index) => (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium flex items-center">
+                {data.title}
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 ml-2 text-muted-foreground cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{data.tooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </CardTitle>
+              <data.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.value}</div>
+              {data.percentage && (
+                <p className="text-xs text-muted-foreground">{data.percentage}</p>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </TooltipProvider>
   );
 }

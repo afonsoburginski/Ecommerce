@@ -1,57 +1,34 @@
-// src/hooks/useCustomerData.ts
-
 import axios from 'axios';
 import useSWR from 'swr';
-import { useToast } from '@/components/ui/use-toast';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
+const saveToLocalStorage = (key: string, value: any) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+};
+
+const loadFromLocalStorage = (key: string) => {
+  if (typeof window !== 'undefined') {
+    const storedValue = localStorage.getItem(key);
+    return storedValue ? JSON.parse(storedValue) : null;
+  }
+  return null;
+};
+
 export const useCustomerData = () => {
-  const { toast } = useToast();
-  const { data: customers, mutate, error } = useSWR('/api/users', fetcher);
+  const initialData = loadFromLocalStorage('customers');
 
-  const addCustomer = async (newCustomer: { name: string, email: string, password: string, role: string, address: string, phone: string, cpf: string, dateOfBirth: string }) => {
-    try {
-      const response = await axios.post('/api/users', newCustomer);
-      const addedCustomer = response.data;
-      mutate([...customers, addedCustomer], false);
-      toast({
-        title: "Success",
-        description: `Customer ${newCustomer.name} was added successfully.`,
-      });
-    } catch (error) {
-      console.error('Error adding customer:', error);
-      toast({
-        title: "Error",
-        description: `Failed to add customer ${newCustomer.name}.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const deleteCustomer = async (customerId: number) => {
-    try {
-      const customer = customers.find((customer: any) => customer.id === customerId);
-      await axios.delete('/api/users', { data: { id: customerId } });
-      mutate(customers.filter((customer: any) => customer.id !== customerId), false);
-      toast({
-        title: "Success",
-        description: `Customer ${customer.name} was deleted successfully.`,
-      });
-    } catch (error) {
-      console.error('Error deleting customer:', error);
-      toast({
-        title: "Error",
-        description: `Failed to delete customer.`,
-        variant: "destructive",
-      });
-    }
-  };
+  const { data: customers, mutate, error } = useSWR('/api/users', fetcher, {
+    fallbackData: initialData,
+    onSuccess: (data) => {
+      saveToLocalStorage('customers', data);
+    },
+  });
 
   return {
     customers,
-    addCustomer,
-    deleteCustomer,
     error,
   };
 };

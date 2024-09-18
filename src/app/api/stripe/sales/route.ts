@@ -1,14 +1,13 @@
-// app/api/stripe/route.ts
+// app/api/stripe/sales/route.ts
 import { NextResponse } from 'next/server';
-import { listBalanceTransactions } from '@/services/stripe';
+import { getDailySales } from '@/services/stripe';
 
 export async function GET() {
   try {
-    const balanceData = await listBalanceTransactions();
-
-    return NextResponse.json(balanceData); // Retorna o saldo, vendas e clientes
+    const dailySales = await getDailySales();
+    return NextResponse.json(dailySales); // Retorna as vendas diárias
   } catch (error) {
-    console.error('Error fetching Stripe data:', error);
+    console.error('Error fetching daily sales:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 
     return NextResponse.json(
