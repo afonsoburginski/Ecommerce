@@ -1,8 +1,6 @@
-// src/app/products/page.tsx
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import ProductTable from "@/components/ProductTable";
 import {
   Tabs,
@@ -12,14 +10,10 @@ import {
 } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { Product } from "@/components/product"; 
 
 export default function Products() {
   const [activeTab, setActiveTab] = useState("ALL");
-  const router = useRouter();
-
-  const handleAddProduct = () => {
-    router.push("/products/register");
-  };
 
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
@@ -28,17 +22,12 @@ export default function Products() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="flex items-center">
               <TabsList>
-                <TabsTrigger value="ALL">All</TabsTrigger>
-                <TabsTrigger value="ACTIVE">Active</TabsTrigger>
-                <TabsTrigger value="ARCHIVED">Archived</TabsTrigger>
+                <TabsTrigger value="ALL">Todos</TabsTrigger>
+                <TabsTrigger value="ACTIVE">Ativos</TabsTrigger>
+                <TabsTrigger value="ARCHIVED">Arquivados</TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <Button size="sm" className="h-8 gap-1" onClick={handleAddProduct}>
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Product
-                  </span>
-                </Button>
+                <Product />
               </div>
             </div>
             <TabsContent value="ALL">

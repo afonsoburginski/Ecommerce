@@ -20,7 +20,7 @@ function mergeSalesWithDays(salesData, year, month) {
   const daysInMonth = generateDaysInMonth(year, month);
   return daysInMonth.map((day) => {
     const saleForDay = salesData.find((sale) => sale.date === day.date);
-    return saleForDay ? saleForDay : { ...day, transactionsCount: 0 }; // Garantir que o número de transações seja 0 para dias sem vendas
+    return saleForDay ? saleForDay : { ...day, transactionsCount: 0 };
   });
 }
 

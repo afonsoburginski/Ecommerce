@@ -1,280 +1,102 @@
-"use client";
+// components/product/ProductRoot.tsx
 
-import { useRouter } from "next/navigation";
-import { useProductForm } from "@/hooks/useProductForm";
-import Image from "next/image";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, ChevronLeft } from "lucide-react";
-import ColorSelect from "../ColorSelect";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetFooter, 
+  SheetTitle, 
+  SheetTrigger 
+} from "@/components/ui/sheet";
+import { PlusCircle } from "lucide-react";
+import ProductForm from "./ProductForm";
+import ProductTable from "./ProductTable";
+import { useProductForm } from "@/hooks/useProductForm";
 
 export default function ProductRoot() {
-  const router = useRouter();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false); // Estado para controlar o painel de visualização
   const {
     details,
-    productStatus,
-    mainImage,
-    thumbImages,
-    isError,
     handleImageSelect,
     handleDetailsChange,
-    setProductStatus,
     handleSave,
-    variants = [],
+    variants,
     handleVariantChange,
     handleAddVariant,
     handleRemoveVariant,
   } = useProductForm();
 
+  // Define a largura adicional quando a visualização está aberta
+  const sheetAdditionalClass = isPreviewOpen ? "max-w-6xl" : "max-w-4xl";
+
   return (
-    <>
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => router.push("/products")}>
-          <ChevronLeft className="h-5 w-5" />
-          <span className="sr-only">Back</span>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button size="sm" className="h-8 gap-1">
+          <PlusCircle className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Adicionar Produto</span>
         </Button>
-        <h1 className="flex-1 text-xl font-semibold">New Product</h1>
-        <div className="hidden md:flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => router.push("/products")}>Discard</Button>
-          <Button variant="default" size="sm" onClick={handleSave}>
-            Save Product
-          </Button>
-        </div>
-      </div>
+      </SheetTrigger>
+      
+      <SheetContent
+        additionalClass={sheetAdditionalClass}
+        className="flex flex-col h-full" // Removido padding geral
+      >
+        {/* SheetHeader Posicionado no Topo */}
+        <SheetHeader>
+          <div className="flex flex-row items-center justify-between">
+            <SheetTitle>Adicionar Produto</SheetTitle>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsPreviewOpen(!isPreviewOpen)}
+            >
+              {isPreviewOpen ? "Fechar Visualização" : "Visualização"}
+            </Button>
+          </div>
+        </SheetHeader>
 
-      <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3">
-        <div className="grid gap-4 lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Details</CardTitle>
-              <CardDescription>Enter the product details below.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-[3fr_1fr] gap-6">
-                <div className="space-y-6">
-                  <div className="flex gap-3 items-center">
-                    <div className="flex-1">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        value={details.name}
-                        onChange={(e) => handleDetailsChange("name", e.target.value)}
-                      />
-                    </div>
-                    <div className="w-40">
-                      <Label htmlFor="price">Price</Label>
-                      <Input
-                        id="price"
-                        value={details.price}
-                        onChange={(e) => handleDetailsChange("price", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={details.description}
-                      onChange={(e) => handleDetailsChange("description", e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="category">Category</Label>
-                    <Select onValueChange={(value) => handleDetailsChange("categoryId", value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {details.categories?.length > 0 ? (
-                          details.categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem disabled>No categories available</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="tags">Tags</Label>
-                    <Select onValueChange={(value) => handleDetailsChange("tagId", value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a tag" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {details.tags?.length > 0 ? (
-                          details.tags.map((tag) => (
-                            <SelectItem key={tag.id} value={tag.id}>
-                              {tag.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem disabled>No tags available</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Variants</CardTitle>
-              <CardDescription>Manage variants, stock, sizes, and colors.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead>Color</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Array.isArray(variants) && variants.length > 0 ? (
-                    variants.map((variant, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <Input
-                            type="text"
-                            value={variant.sku}
-                            onChange={(e) => handleVariantChange(index, "sku", e.target.value)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={variant.stock}
-                            onChange={(e) => handleVariantChange(index, "stock", Number(e.target.value))}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="text"
-                            value={variant.size}
-                            onChange={(e) => handleVariantChange(index, "size", e.target.value)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <ColorSelect
-                            value={variant.color}
-                            onChange={(value) => handleVariantChange(index, "color", value)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="destructive" onClick={() => handleRemoveVariant(index)}>
-                            Remove
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5}>No variants available</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-            <CardFooter>
-              <Button variant="ghost" onClick={handleAddVariant}>
-                <PlusCircle className="h-4 w-4" /> Add Variant
+        {/* Conteúdo Principal e Segunda Coluna */}
+        <div className="flex flex-row flex-1 mt-4">
+          {/* Conteúdo Principal */}
+          <div 
+            className={`flex flex-col flex-1 transition-all duration-500 ease-in-out ${isPreviewOpen ? "w-2/3 border-r border-gray-300 pr-4" : "w-full pr-4"}`} // Adicionado pr-4
+          >
+            <div className="flex-1 overflow-y-auto">
+              <ProductForm
+                details={details}
+                handleDetailsChange={handleDetailsChange}
+                handleImageSelect={handleImageSelect}
+              />
+              <ProductTable
+                variants={variants}
+                handleVariantChange={handleVariantChange}
+                handleAddVariant={handleAddVariant}
+                handleRemoveVariant={handleRemoveVariant}
+              />
+            </div>
+            {/* SheetFooter Alinhado com Conteúdo Principal */}
+            <SheetFooter className="mt-4">
+              <Button variant="default" size="sm" onClick={handleSave}>
+                Salvar Produto
               </Button>
-            </CardFooter>
-          </Card>
-        </div>
+            </SheetFooter>
+          </div>
 
-        <div className="grid gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6">
-                <div className="grid gap-3">
-                  <Label htmlFor="status">Status</Label>
-                  <Select onValueChange={setProductStatus}>
-                    <SelectTrigger id="status" aria-label="Select status">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ACTIVE">Active</SelectItem>
-                      <SelectItem value="DRAFT">Draft</SelectItem>
-                      <SelectItem value="ARCHIVED">Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+          {/* Segunda Coluna: Visualização */}
+          {isPreviewOpen && (
+            <div className="w-1/3 h-full bg-gray-100 transition-all duration-500 ease-in-out">
+              {/* Opcional: Adicionar padding interno apenas ao conteúdo da visualização */}
+              <div className="p-2">
+                <h2 className="text-lg font-semibold">Visualização do Produto</h2>
+                <p>Conteúdo de visualização será exibido aqui futuramente.</p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="overflow-hidden">
-            <CardHeader>
-              <CardTitle>Product Images</CardTitle>
-              <CardDescription>Upload and manage product images.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4">
-                <div className="relative">
-                  <input
-                    type="file"
-                    id="mainUpload"
-                    accept="image/*"
-                    onChange={(e) => handleImageSelect(e.target.files[0], "main")}
-                    className="hidden"
-                  />
-                  <label htmlFor="mainUpload">
-                    <Image
-                      alt="Product image"
-                      className="aspect-square rounded-md object-cover cursor-pointer"
-                      height="370"
-                      src={mainImage ? URL.createObjectURL(mainImage) : "/placeholder.png"}
-                      width="370"
-                    />
-                  </label>
-                </div>
-                <div className="flex flex-col gap-2">
-                  {thumbImages.map((thumb, index) => (
-                    <div key={index} className="relative">
-                      <input
-                        type="file"
-                        id={`thumbUpload${index}`}
-                        accept="image/*"
-                        onChange={(e) => handleImageSelect(e.target.files[0], index)}
-                        className="hidden"
-                      />
-                      <label htmlFor={`thumbUpload${index}`}>
-                        <Image
-                          alt="Thumbnail"
-                          className="aspect-square rounded-md object-cover cursor-pointer"
-                          height="118"
-                          src={thumb ? URL.createObjectURL(thumb) : "/placeholder.png"}
-                          width="118"
-                        />
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
-      </div>
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }

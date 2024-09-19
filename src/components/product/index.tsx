@@ -1,6 +1,8 @@
-import ProductRoot from "./ProductRoot";
+// components/product/index.tsx
+export { default as ProductRoot } from "./ProductRoot";
+export { default as ProductForm } from "./ProductForm";
+export { default as ProductTable } from "./ProductTable";
+export { default as InputWithPrefix } from "./InputWithPrefix";
 
-// Como todos os subcomponentes estão dentro do ProductRoot, podemos exportar apenas o ProductRoot diretamente.
-const Product = ProductRoot;
-
-export default Product;
+// Exportando ProductRoot como Product para uso mais simples
+export { default as Product } from "./ProductRoot";

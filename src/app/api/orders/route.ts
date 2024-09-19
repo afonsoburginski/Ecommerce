@@ -8,7 +8,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-06-20",
 });
 
-// Função para atualizar o status do pedido no banco de dados
 async function updateOrderStatus(orderId: number, status: OrderStatus) {
   await prisma.order.update({
     where: { id: orderId },
@@ -16,7 +15,6 @@ async function updateOrderStatus(orderId: number, status: OrderStatus) {
   });
 }
 
-// Função para obter detalhes do pagamento a partir do Stripe
 async function getPaymentDetails(transactionId: string): Promise<{ status: OrderStatus; last4: string }> {
   const stripeSession = await retrieveSession(transactionId);
 

@@ -12,7 +12,7 @@ model Product {
   id          Int           @id @default(autoincrement())
   name        String
   description String
-  price       Int
+  price       Float
   stock       Int
   images      String[]
   status      ProductStatus

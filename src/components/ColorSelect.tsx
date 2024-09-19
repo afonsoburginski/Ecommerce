@@ -33,6 +33,8 @@ const colourStyles: StylesConfig<ColourOption, true> = {
     ...styles,
     backgroundColor: "hsl(var(--background))",
     borderColor: "hsl(var(--border))",
+    height: '2rem', // Ajuste para h-8
+    minHeight: '2rem', // Garantir altura mínima para h-8
     "&:hover": {
       borderColor: "hsl(var(--primary))",
     },
@@ -102,7 +104,7 @@ const ColorSelect: React.FC<ColorSelectProps> = ({ value, onChange }) => {
         value.split(", ").includes(option.value)
       )}
       styles={colourStyles}
-      placeholder="Select Colors"
+      placeholder="Cores"
       menuPortalTarget={document.body}
       onChange={(selectedOptions) =>
         onChange(selectedOptions.map((option) => option.value).join(", "))

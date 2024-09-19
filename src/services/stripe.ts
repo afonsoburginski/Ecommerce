@@ -68,3 +68,25 @@ export async function getDailySales(limit = 100) {
 
   return dailySales;
 }
+
+
+
+export async function retrieveSession(sessionId: string) {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    return session;
+  } catch (error) {
+    console.error('Failed to retrieve session:', error);
+    return null;
+  }
+}
+
+export async function retrieveCharge(chargeId: string) {
+  try {
+    const charge = await stripe.charges.retrieve(chargeId);
+    return charge;
+  } catch (error) {
+    console.error('Failed to retrieve charge:', error);
+    return null;
+  }
+}
