@@ -12,49 +12,37 @@ datasource db {
 }
 
 model Product {
-  id          Int       @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   name        String
   description String
-  price       Int
+  price       Float
   stock       Int
   images      String[]
-  categories  Category[]
-  orderItems  OrderItem[]
-  tags        Tag[]
   status      ProductStatus
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime      @default(now())
+  orderItems  OrderItem[]
   variants    Variant[]
-}
-
-enum ProductStatus {
-  DRAFT
-  ACTIVE
-  ARCHIVED
+  categories  Category[]    @relation("CategoryToProduct")
+  tags        Tag[]         @relation("ProductToTag")
 }
 
 model Variant {
-  id        Int     @id @default(autoincrement())
-  sku       String  @unique
+  id        Int         @id @default(autoincrement())
+  sku       String      @unique
   stock     Int
   size      String?
   color     String?
-  product   Product @relation(fields: [productId], references: [id])
   productId Int
-
   OrderItem OrderItem[]
-}
-
-model Color {
-  id       Int      @id @default(autoincrement())
-  name     String   @unique
-  hexCode  String
+  product   Product     @relation(fields: [productId], references: [id])
 }
 
 model Category {
   id       Int       @id @default(autoincrement())
   name     String
-  products Product[]
+  products Product[] @relation("CategoryToProduct")
 }
+
 
 model User {
   id                Int        @id @default(autoincrement())
@@ -80,12 +68,18 @@ model OrderItem {
   id        Int     @id @default(autoincrement())
   quantity  Int
   price     Float
-  product   Product @relation(fields: [productId], references: [id])
   productId Int
-  order     Order   @relation(fields: [orderId], references: [id])
   orderId   Int
-  variant   Variant @relation(fields: [variantId], references: [id])
   variantId Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+  variant   Variant @relation(fields: [variantId], references: [id])
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
 }
 
 enum OrderStatus {
@@ -97,10 +91,16 @@ enum OrderStatus {
   FAILED
 }
 
+model Color {
+  id       Int      @id @default(autoincrement())
+  name     String   @unique
+  hexCode  String
+}
+
 model Tag {
   id       Int       @id @default(autoincrement())
   name     String
-  products Product[]
+  products Product[] @relation("ProductToTag")
 }
 
 model Gallery {

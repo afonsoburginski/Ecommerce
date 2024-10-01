@@ -1,11 +1,12 @@
 "use client";
 
+import React from "react";
 import {
   ChevronLeft,
   CreditCard,
   MoreVertical,
 } from "lucide-react";
-
+import Link from "next/link"; // Importação do Link
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,20 +48,23 @@ export default function Payments() {
         <main className="flex-1 p-4 sm:px-6 sm:py-0">
           <div className="mx-auto w-full max-w-screen-xl space-y-4">
             <div className="flex items-center gap-4 mb-4">
-              <Button variant="outline" size="icon" className="h-7 w-7">
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Back</span>
-              </Button>
+              {/* Uso do Link envolvendo o botão */}
+              <Link href="/">
+                <Button variant="outline" size="icon" className="h-7 w-7">
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="sr-only">Back</span>
+                </Button>
+              </Link>
               <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                 Payments Dashboard
               </h1>
               <Badge variant="outline" className="ml-auto sm:ml-0">
-                Stripe Connected
+                Payment Connected
               </Badge>
             </div>
             <Card className="w-full">
               <CardHeader>
-                <CardTitle>Método de pagamento	</CardTitle>
+                <CardTitle>Método de pagamento</CardTitle>
                 <CardDescription>
                   Your Stripe account: {stripeAccount.email}
                 </CardDescription>
@@ -106,7 +110,7 @@ export default function Payments() {
               <CardHeader>
                 <CardTitle>Transações recentes</CardTitle>
                 <CardDescription>
-                  Visão geral de suas transações mais recentes..
+                  Visão geral de suas transações mais recentes.
                 </CardDescription>
               </CardHeader>
               <CardContent>

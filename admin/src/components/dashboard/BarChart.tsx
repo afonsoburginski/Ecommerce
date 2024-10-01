@@ -5,17 +5,15 @@ import { Bar, BarChart, CartesianGrid, XAxis, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 
-// Função para gerar todos os dias do mês
 function generateDaysInMonth(year, month) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, day) => {
     const date = new Date(year, month, day + 1).toISOString().split("T")[0];
-    return { date, total: 0 }; // Total `0` para dias sem vendas
+    return { date, total: 0 };
   });
   return days;
 }
 
-// Função para mesclar os dados de vendas com os dias do mês
 function mergeSalesWithDays(salesData, year, month) {
   const daysInMonth = generateDaysInMonth(year, month);
   return daysInMonth.map((day) => {
@@ -24,14 +22,13 @@ function mergeSalesWithDays(salesData, year, month) {
   });
 }
 
-
 export default function Chart() {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     async function fetchDailySales() {
       try {
-        const response = await fetch("/api/stripe/sales");
+        const response = await fetch("/api/orders/sales");
         const salesData = await response.json();
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth();
@@ -41,7 +38,6 @@ export default function Chart() {
         console.error("Erro ao buscar dados de vendas diárias:", error);
       }
     }
-
     fetchDailySales();
   }, []);
 
@@ -100,7 +96,7 @@ export default function Chart() {
               }}
             />
             <Bar
-              dataKey="transactionsCount" // Alterar para exibir o número de transações
+              dataKey="transactionsCount"
               fill="var(--color-bar)"
               radius={[8, 8, 0, 0]}
             />

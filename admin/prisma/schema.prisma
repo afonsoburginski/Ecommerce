@@ -1,3 +1,6 @@
+// schema.prisma
+
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -34,35 +37,30 @@ model Variant {
   product   Product     @relation(fields: [productId], references: [id])
 }
 
-model Color {
-  id      Int    @id @default(autoincrement())
-  name    String @unique
-  hexCode String
-}
-
 model Category {
   id       Int       @id @default(autoincrement())
   name     String
   products Product[] @relation("CategoryToProduct")
 }
 
+
 model User {
-  id               Int      @id @default(autoincrement())
-  email            String   @unique
-  name             String
-  createdAt        DateTime @default(now())
-  stripeCustomerId String?
-  updatedAt        DateTime @updatedAt
-  orders           Order[]
+  id                Int        @id @default(autoincrement())
+  email             String     @unique
+  name              String
+  orders            Order[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  stripeCustomerId  String?
 }
 
 model Order {
-  id            Int         @id @default(autoincrement())
-  createdAt     DateTime    @default(now())
-  status        OrderStatus @default(PENDING)
+  id            Int            @id @default(autoincrement())
+  createdAt     DateTime       @default(now())
+  status        OrderStatus    @default(PENDING)
+  user          User           @relation(fields: [userId], references: [id])
   userId        Int
   transactionId String?
-  user          User        @relation(fields: [userId], references: [id])
   orderItems    OrderItem[]
 }
 
@@ -76,12 +74,6 @@ model OrderItem {
   order     Order   @relation(fields: [orderId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
   variant   Variant @relation(fields: [variantId], references: [id])
-}
-
-model Tag {
-  id       Int       @id @default(autoincrement())
-  name     String
-  products Product[] @relation("ProductToTag")
 }
 
 enum ProductStatus {
@@ -98,3 +90,24 @@ enum OrderStatus {
   CANCELED
   FAILED
 }
+
+model Color {
+  id       Int      @id @default(autoincrement())
+  name     String   @unique
+  hexCode  String
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[] @relation("ProductToTag")
+}
+
+model Gallery {
+  id        Int      @id @default(autoincrement())
+  title     String
+  url       String
+  caption   String?
+  createdAt DateTime @default(now())
+}
+

@@ -10,7 +10,6 @@ import {
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import Image from 'next/image';
-import { useSwipeable } from 'react-swipeable';
 
 export function ShopCart() {
   const { cart, cartItemCount, isNewProductAdded, resetNewProductFlag, checkStock, removeFromCart } = useCart();
@@ -92,48 +91,39 @@ export function ShopCart() {
               <p>Seu carrinho está vazio.</p>
             ) : (
               <>
-                {cart.map((item) => {
-                  // Usando swipe para remover o item
-                  const swipeHandlers = useSwipeable({
-                    onSwipedLeft: () => removeFromCart(item.productId),
-                    preventDefaultTouchmoveEvent: true,
-                    trackMouse: true, // Permite usar o mouse para teste em desktops
-                  });
-
-                  return (
-                    <div key={item.productId} {...swipeHandlers} className="flex items-start mb-4">
-                      <div className="w-16 h-16 relative mr-4">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          layout="fill"
-                          objectFit="cover"
-                          className="rounded-md"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-sm font-semibold flex-1 truncate">
-                            {item.name}
-                          </h3>
-                          <span className="text-sm font-semibold text-gray-800 ml-2">
-                            R$ {item.price}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center mt-1">
-                          <div className="flex space-x-2">
-                            <span className="text-xs text-gray-600">{item.color}</span>
-                            <span className="text-xs text-gray-600">{item.size}</span>
-                          </div>
-                          <span className="text-xs text-gray-600">Qtd: {item.quantity}</span>
-                        </div>
-                        {item.inStock === false && (
-                          <p className="text-xs text-red-600">Produto fora de estoque</p>
-                        )}
-                      </div>
+                {cart.map((item) => (
+                  <div key={item.productId} className="flex items-start mb-4">
+                    <div className="w-16 h-16 relative mr-4">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-md"
+                      />
                     </div>
-                  );
-                })}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-semibold flex-1 truncate">
+                          {item.name}
+                        </h3>
+                        <span className="text-sm font-semibold text-gray-800 ml-2">
+                          R$ {item.price}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center mt-1">
+                        <div className="flex space-x-2">
+                          <span className="text-xs text-gray-600">{item.color}</span>
+                          <span className="text-xs text-gray-600">{item.size}</span>
+                        </div>
+                        <span className="text-xs text-gray-600">Qtd: {item.quantity}</span>
+                      </div>
+                      {item.inStock === false && (
+                        <p className="text-xs text-red-600">Produto fora de estoque</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </>
             )}
           </div>

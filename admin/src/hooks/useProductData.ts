@@ -12,7 +12,7 @@ export const useProductData = (): UseProductDataResult => {
   const error = productsError || categoriesError || tagsError || topSellingProductsError;
 
   return {
-    product: null, // Certifique-se de retornar `product`, mesmo que seja `null`
+    product: null,
     topSellingProducts: topSellingProducts || [],
     products: productsData || [],
     categories: categoriesData || [],

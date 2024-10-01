@@ -35,7 +35,7 @@ export function TopSellingProductsCard() {
             </div>
           ))
         ) : (
-          <p>Nenhum produto encontrado.</p>
+          <p>Ainda não há vendas.</p>
         )}
       </CardContent>
     </Card>

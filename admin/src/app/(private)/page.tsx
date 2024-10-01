@@ -4,7 +4,7 @@ import React from 'react';
 import { CardGrid } from '@/components/dashboard/CardGrid';
 import { TopSellingProductsCard } from '@/components/dashboard/TopSellingProductsCard';
 import { TransactionsCard } from '@/components/dashboard/TransactionsCard';
-import Chart from '@/components/BarChart';
+import Chart from '@/components/dashboard/BarChart';
 
 export default function Dashboard() {
   return (

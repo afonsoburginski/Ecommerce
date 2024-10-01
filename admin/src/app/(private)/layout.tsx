@@ -5,8 +5,14 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/header';
 import Sidebar from '@/components/sidebar';
 import AuthWrapper from '@/components/auth/AuthWrapper';
+import { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'Admin Painel',
+  description: 'Storefront - Admin Painel',
+};
 
 export default function PrivateLayout({ children }: { children: React.ReactNode }) {
   return (

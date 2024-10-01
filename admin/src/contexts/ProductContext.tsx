@@ -7,13 +7,11 @@ import { useProductData } from "@/hooks/useProductData";
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-export const ProductProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const { products, categories, tags, isLoading, error } = useProductData();
+export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { products, categories, tags, isLoading, error, mutateProducts } = useProductData();
 
   return (
-    <ProductContext.Provider value={{ products, categories, tags, isLoading, isError: !!error }}>
+    <ProductContext.Provider value={{ products, categories, tags, isLoading, isError: !!error, mutateProducts }}>
       {children}
     </ProductContext.Provider>
   );
@@ -24,5 +22,8 @@ export const useProducts = () => {
   if (!context) {
     throw new Error("useProducts must be used within a ProductProvider");
   }
-  return context;
+
+  const { products, categories, tags, isLoading, isError } = context;
+
+  return { products, categories, tags, isLoading, isError, mutateProducts: context.mutateProducts };
 };

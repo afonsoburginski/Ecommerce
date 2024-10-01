@@ -8,12 +8,18 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { ProductRoot } from "@/components/product";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { Product } from "@/components/product"; 
 
 export default function Products() {
-  const [activeTab, setActiveTab] = useState("ALL");
+  const [activeTab, setActiveTab] = useState("ACTIVE");
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const handleAddProduct = () => {
+    setSelectedProduct(null);
+    setIsSheetOpen(true);
+  };
 
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
@@ -27,7 +33,7 @@ export default function Products() {
                 <TabsTrigger value="ARCHIVED">Arquivados</TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <Product />
+                <Button onClick={handleAddProduct}>Adicionar Produto</Button>
               </div>
             </div>
             <TabsContent value="ALL">
@@ -42,6 +48,14 @@ export default function Products() {
           </Tabs>
         </main>
       </div>
+
+      {isSheetOpen && (
+        <ProductRoot
+          product={selectedProduct}
+          isOpen={isSheetOpen}
+          onClose={() => setIsSheetOpen(false)}
+        />
+      )}
     </div>
   );
 }
