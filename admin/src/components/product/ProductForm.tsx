@@ -3,12 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info, X } from "lucide-react"; // Importa o ícone de remover
+import { Info, X } from "lucide-react";
 import InputWithPrefix from "./InputWithPrefix";
 import Image from "next/image";
 import React, { useState } from "react";
-
-// Tipos para o ProductForm
 interface Category {
   id: number;
   name: string;
@@ -32,8 +30,8 @@ interface ProductFormProps {
   details: ProductDetails;
   handleDetailsChange: (field: string, value: any) => void;
   handleImageSelect: (file: File, index: number | "main") => void;
-  categories: Category[]; // Recebe categorias como prop
-  tags: Tag[]; // Recebe tags como prop
+  categories: Category[];
+  tags: Tag[];
 }
 
 export default function ProductForm({ 
@@ -189,8 +187,8 @@ export default function ProductForm({
         <div>
           <Label htmlFor="category">Categoria</Label>
           <Select 
-            onValueChange={(value) => handleDetailsChange("categoryId", Number(value))} // Converte string para número
-            value={details.categoryId !== null ? String(details.categoryId) : undefined} // Usar undefined para placeholder
+            onValueChange={(value) => handleDetailsChange("categoryId", Number(value))}
+            value={details.categoryId !== null ? String(details.categoryId) : undefined}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecione uma categoria" />
@@ -211,8 +209,8 @@ export default function ProductForm({
         <div>
           <Label htmlFor="tags">Tags</Label>
           <Select 
-            onValueChange={(value) => handleDetailsChange("tagId", Number(value))} // Converte string para número
-            value={details.tagId !== null ? String(details.tagId) : undefined} // Usar undefined para placeholder
+            onValueChange={(value) => handleDetailsChange("tagId", Number(value))}
+            value={details.tagId !== null ? String(details.tagId) : undefined}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecione uma tag" />

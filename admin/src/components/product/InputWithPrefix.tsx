@@ -5,14 +5,14 @@ interface InputWithPrefixProps {
   id: string;
   value: string | number;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string; // Adicionando a propriedade placeholder como opcional
+  placeholder?: string;
 }
 
 export default function InputWithPrefix({
   id,
   value,
   onChange,
-  placeholder, // Recebendo o placeholder
+  placeholder,
 }: InputWithPrefixProps) {
   return (
     <div className="relative">
@@ -22,7 +22,7 @@ export default function InputWithPrefix({
         value={value}
         onChange={onChange}
         className="pl-10"
-        placeholder={placeholder} // Usando o placeholder
+        placeholder={placeholder}
       />
     </div>
   );

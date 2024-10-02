@@ -37,19 +37,16 @@ export async function POST(request: Request) {
 
     const status = ProductStatus.ACTIVE;
 
-    // Verificar as variantes
     for (const variant of variants) {
       if (variant.stock === undefined || variant.stock === null || isNaN(variant.stock) || variant.stock < 0) {
         return NextResponse.json({ error: 'Stock inválido ou ausente' }, { status: 400 });
       }
     }
 
-    // Verificar os campos obrigatórios
     if (!name || !description || isNaN(price)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Fazer upload da imagem, se houver
     let imageUrl = null;
     if (file) {
       imageUrl = await uploadImage(file);
@@ -58,7 +55,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Criar os dados do novo produto
     const newProductData = {
       name,
       description,
@@ -77,7 +73,6 @@ export async function POST(request: Request) {
       },
     };
 
-    // Criar o novo produto no banco de dados
     const newProduct = await prisma.product.create({
       data: newProductData,
     });
