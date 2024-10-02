@@ -22,14 +22,18 @@ export function CardGrid() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch('/api/stripe');
+        const response = await fetch('/api/orders');
         const result = await response.json();
+        const totalSalesAmount = result.reduce((acc: any, order: { orderItems: any[]; }) => acc + order.orderItems.reduce((itemAcc: number, item: { price: number; quantity: number; }) => itemAcc + item.price * item.quantity, 0), 0);
+        const totalSalesCount = result.length;
+        const totalCustomers = new Set(result.map((order: { userId: any; }) => order.userId)).size;
+
         setData({
-          totalSalesAmount: result.totalSalesAmount,
-          balanceAvailable: result.balanceAvailable,
-          balancePending: result.balancePending,
-          totalSalesCount: result.totalSalesCount,
-          totalCustomers: result.totalCustomers,
+          totalSalesAmount,
+          balanceAvailable: 0,
+          balancePending: 0,
+          totalSalesCount,
+          totalCustomers,
         });
       } catch (error) {
         console.error('Falha ao buscar dados:', error);
@@ -39,32 +43,37 @@ export function CardGrid() {
     fetchData();
   }, []);
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount: string | number | bigint) => {
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(numericAmount as number)) {
+      return 'Invalid amount';
+    }
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-    }).format(amount);
+    }).format(numericAmount);
   };
+  
 
   const cardData = [
     {
       title: 'Receita Total',
       icon: DollarSign,
-      value: formatCurrency(data.balanceAvailable + data.balancePending),
+      value: formatCurrency(data.totalSalesAmount),
       percentage: '+12.3 desde o mês passado',
-      tooltip: 'Soma do saldo disponível e saldo pendente das vendas.',
+      tooltip: 'Soma do valor total de vendas realizadas.',
     },
     {
       title: 'Clientes Totais',
       icon: Users,
       value: data.totalCustomers,
-      tooltip: 'Número total de clientes cadastrados.',
+      tooltip: 'Número total de clientes que fizeram compras.',
     },
     {
       title: 'Vendas Totais',
       icon: CreditCard,
-      value: formatCurrency(data.totalSalesAmount), // Valor bruto das vendas
-      tooltip: 'Valor bruto acumulado de todas as vendas.',
+      value: data.totalSalesCount,
+      tooltip: 'Número total de pedidos realizados.',
     },
     {
       title: 'Ativos Agora',

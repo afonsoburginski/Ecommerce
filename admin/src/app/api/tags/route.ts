@@ -7,10 +7,18 @@ export async function GET() {
     const tags = await prisma.tag.findMany();
     return NextResponse.json(tags, { status: 200 });
   } catch (error) {
-    console.error('Erro ao buscar tags:', error.message, error.stack);
-    return NextResponse.json(
-      { error: 'Erro Interno do Servidor', details: error.message },
-      { status: 500 }
-    );
+    if (error instanceof Error) {
+      console.error('Erro ao buscar tags:', error.message, error.stack);
+      return NextResponse.json(
+        { error: 'Erro Interno do Servidor', details: error.message },
+        { status: 500 }
+      );
+    } else {
+      console.error('Erro desconhecido:', error);
+      return NextResponse.json(
+        { error: 'Erro Interno do Servidor', details: 'Erro desconhecido' },
+        { status: 500 }
+      );
+    }
   }
 }

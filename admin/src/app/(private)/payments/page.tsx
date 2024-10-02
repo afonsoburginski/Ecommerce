@@ -1,12 +1,11 @@
 "use client";
-
 import React from "react";
 import {
   ChevronLeft,
   CreditCard,
   MoreVertical,
 } from "lucide-react";
-import Link from "next/link"; // Importação do Link
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,9 +18,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import DataTable from "@/components/dataTable";
 
-// Dados de exemplo simulando informações do Stripe
-const stripeAccount = {
-  email: "merchant@example.com",
+const Account = {
+  email: "vendas@example.com",
   paymentMethods: [
     {
       id: "pm_1",
@@ -40,7 +38,6 @@ const stripeAccount = {
   ],
 };
 
-// Utilize DataTable para transações
 export default function Payments() {
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
@@ -48,7 +45,6 @@ export default function Payments() {
         <main className="flex-1 p-4 sm:px-6 sm:py-0">
           <div className="mx-auto w-full max-w-screen-xl space-y-4">
             <div className="flex items-center gap-4 mb-4">
-              {/* Uso do Link envolvendo o botão */}
               <Link href="/">
                 <Button variant="outline" size="icon" className="h-7 w-7">
                   <ChevronLeft className="h-4 w-4" />
@@ -66,7 +62,7 @@ export default function Payments() {
               <CardHeader>
                 <CardTitle>Método de pagamento</CardTitle>
                 <CardDescription>
-                  Your Stripe account: {stripeAccount.email}
+                  Your account: {Account.email}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -83,7 +79,7 @@ export default function Payments() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stripeAccount.paymentMethods.map((method) => (
+                    {Account.paymentMethods.map((method) => (
                       <TableRow key={method.id}>
                         <TableCell>
                           <CreditCard className="mr-2 h-4 w-4" />

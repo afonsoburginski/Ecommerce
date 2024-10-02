@@ -18,17 +18,17 @@ import { ChevronDown } from "lucide-react";
 import { DataTableHeader } from "./DataTableHeader";
 import { DataTableBody } from "./DataTableBody";
 import { DataTablePagination } from "./DataTablePagination";
-import { useStripeTransactions } from "@/contexts/TransactionsContext";
+import { useTransactions } from "@/contexts/TransactionsContext";
 import { Table } from "@/components/ui/table";
 
 export function DataTableRoot() {
-  const { orders: transactions, loading, error } = useStripeTransactions();
+  const { orders: transactions, loading, error } = useTransactions();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const table = useReactTable({
+  const table = useReactTable<FormattedOrder>({
     data: transactions,
     columns,
     onSortingChange: setSorting,
@@ -45,7 +45,7 @@ export function DataTableRoot() {
       columnVisibility,
       rowSelection,
     },
-  });
+  });  
 
   return (
     <div className="w-full">

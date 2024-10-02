@@ -7,9 +7,10 @@ export async function GET() {
     const categories = await prisma.category.findMany();
     return NextResponse.json(categories, { status: 200 });
   } catch (error) {
-    console.error('Erro ao buscar categorias:', error.message, error.stack);
+    const err = error as Error;
+    console.error('Erro ao buscar categorias:', err.message, err.stack);
     return NextResponse.json(
-      { error: 'Erro Interno do Servidor', details: error.message },
+      { error: 'Erro Interno do Servidor', details: err.message },
       { status: 500 }
     );
   }

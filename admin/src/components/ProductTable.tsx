@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -30,10 +29,12 @@ import {
 import ProductRoot from "@/components/product/ProductRoot";
 import { useProducts } from "@/contexts/ProductContext";
 import { useToast } from "@/components/ui/use-toast";
+import React from "react";
 
+// Definir o estado como Product | null
 export default function ProductTable({ status }: { status: string }) {
   const { products, isLoading, isError, mutateProducts } = useProducts();
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Ajuste aqui
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
 
@@ -42,9 +43,12 @@ export default function ProductTable({ status }: { status: string }) {
   }
 
   const normalizedStatus = status.toUpperCase();
-  const filteredProducts = normalizedStatus === "ALL"
-    ? products
-    : products.filter((product) => product.status.toUpperCase() === normalizedStatus);
+  const filteredProducts =
+    normalizedStatus === "ALL"
+      ? products
+      : products.filter(
+          (product) => product.status.toUpperCase() === normalizedStatus
+        );
 
   const getBadgeVariant = (status: string) => {
     switch (status.toUpperCase()) {
@@ -59,42 +63,49 @@ export default function ProductTable({ status }: { status: string }) {
     }
   };
 
-  const handleEditProduct = (product) => {
-    setSelectedProduct(product);
+  const handleEditProduct = (product: Product) => {
+    setSelectedProduct(product); // Produto selecionado
     setIsSheetOpen(true);
   };
 
-  const handleToggleProductStatus = async (product) => {
+  const handleToggleProductStatus = async (product: Product) => {
     const newStatus = product.status === "ACTIVE" ? "ARCHIVED" : "ACTIVE";
-  
+
     try {
       const response = await fetch(`/api/products`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({
           id: product.id,
-          status: newStatus
+          status: newStatus,
         }),
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
-  
+
       if (response.status !== 200) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Falha ao mudar o status para ${newStatus}`);
+        throw new Error(
+          errorData.error || `Falha ao mudar o status para ${newStatus}`
+        );
       }
-  
+
       await mutateProducts();
-  
+
       toast({
-        title: `Produto ${newStatus === 'ARCHIVED' ? 'arquivado' : 'ativado'} com sucesso.`,
+        title: `Produto ${
+          newStatus === "ARCHIVED" ? "arquivado" : "ativado"
+        } com sucesso.`,
         variant: "success",
       });
     } catch (error) {
-      console.error(`Erro ao mudar o status para ${newStatus}:`, error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro desconhecido";
+
+      console.error(`Erro ao mudar o status para ${newStatus}:`, errorMessage);
       toast({
         title: `Erro ao mudar o status para ${newStatus}.`,
-        description: `Ocorreu um erro: ${error.message}`,
+        description: `Ocorreu um erro: ${errorMessage}`,
         variant: "destructive",
       });
     }
@@ -136,7 +147,7 @@ export default function ProductTable({ status }: { status: string }) {
                       alt="Product image"
                       className="aspect-square rounded-md object-cover"
                       height="64"
-                      src={product.images[0] || '/placeholder.svg'}
+                      src={product.images[0] || "/placeholder.svg"}
                       width="64"
                     />
                   </TableCell>
@@ -181,7 +192,7 @@ export default function ProductTable({ status }: { status: string }) {
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggleProductStatus(product)}>
-                          {product.status === 'ACTIVE' ? 'Arquivar' : 'Ativar'}
+                          {product.status === "ACTIVE" ? "Arquivar" : "Ativar"}
                         </DropdownMenuItem>
                         <DropdownMenuItem>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
@@ -201,7 +212,7 @@ export default function ProductTable({ status }: { status: string }) {
 
       {isSheetOpen && (
         <ProductRoot
-          product={selectedProduct}
+          product={selectedProduct || undefined} // Se null, passar undefined
           isOpen={isSheetOpen}
           onClose={() => setIsSheetOpen(false)}
         />

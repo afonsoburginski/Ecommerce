@@ -3,20 +3,10 @@ import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableActions } from "./DataTableActions";
-import { Badge } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
+import { VariantProps } from "class-variance-authority";
 
-export interface FormattedOrder {
-  id: number;
-  amount: number;
-  status: string;
-  email: string;
-  customer: string;
-  date: string;
-  transactionId: string;
-  paymentMethod: string;
-}
-
-export const columns: ColumnDef<FormattedOrder>[] = [
+export const columns: ColumnDef<FormattedOrder, any>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -78,7 +68,6 @@ export const columns: ColumnDef<FormattedOrder>[] = [
       const status = row.getValue("status") as string;
       let variant: VariantProps<typeof badgeVariants>["variant"] = "default";
 
-      // Determinando a cor do badge com base no status
       switch (status.toLowerCase()) {
         case "paid":
           variant = "success";
@@ -110,7 +99,7 @@ export const columns: ColumnDef<FormattedOrder>[] = [
       const lastFourDigits = paymentMethod ? paymentMethod.slice(-4) : "N/A";
       return <div>{paymentMethod ? `**** ${lastFourDigits}` : "N/A"}</div>;
     },
-  },  
+  },
   {
     id: "actions",
     enableHiding: false,

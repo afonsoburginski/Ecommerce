@@ -1,6 +1,19 @@
-export {};
+// global.d.ts
+
+export {}; // Necessário para tratar o arquivo como um módulo
 
 declare global {
+  export interface FormattedOrder {
+    id: number;
+    amount: number;
+    status: string;
+    email: string;
+    customer: string;
+    date: string;
+    transactionId: string;
+    paymentMethod?: string; // Opcional
+  }
+
   type Payment = {
     id: string;
     amount: number;
@@ -9,6 +22,16 @@ declare global {
     customer: string;
     date: string;
   };
+
+  interface ProductDetails {
+    id: number;
+    name: string;
+    price: number; // Alterando para number
+    stock: number; // Alterando para number
+    description: string;
+    categoryId: number;
+    tagId: number;
+  }  
 
   interface Product {
     [x: string]: any;
@@ -63,5 +86,9 @@ declare global {
     tags: Tag[];
     isLoading: boolean;
     isError: boolean;
+    mutateProducts: () => void; // Adicionando mutateProducts
+    mutateCategories: () => void; // Adicionando mutateCategories
+    mutateTags: () => void; // Adicionando mutateTags
+    mutateTopSellingProducts: () => void; // Adicionando mutateTopSellingProducts
   }
 }

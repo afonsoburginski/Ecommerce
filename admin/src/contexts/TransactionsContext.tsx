@@ -21,10 +21,10 @@ interface TransactionsContextValue {
 
 const TransactionsContext = createContext<TransactionsContextValue | undefined>(undefined);
 
-export const useStripeTransactions = (): TransactionsContextValue => {
+export const useTransactions = (): TransactionsContextValue => {
   const context = useContext(TransactionsContext);
   if (!context) {
-    throw new Error('useStripeTransactions must be used within a TransactionsProvider');
+    throw new Error('useTransactions must be used within a TransactionsProvider');
   }
   return context;
 };

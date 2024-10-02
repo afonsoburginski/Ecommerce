@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { retrieveSession, retrieveCharge } from '@/services/stripe';
-import Stripe from "stripe";
 import { OrderStatus } from '@prisma/client';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-06-20",
-});
-
+// Função para atualizar o status da ordem
 async function updateOrderStatus(orderId: number, status: OrderStatus) {
   await prisma.order.update({
     where: { id: orderId },
@@ -15,35 +10,9 @@ async function updateOrderStatus(orderId: number, status: OrderStatus) {
   });
 }
 
-async function getPaymentDetails(transactionId: string): Promise<{ status: OrderStatus; last4: string }> {
-  const stripeSession = await retrieveSession(transactionId);
-
-  if (!stripeSession?.payment_status) {
-    throw new Error('Falha ao recuperar o status do pagamento');
-  }
-
-  const transactionStatus: OrderStatus = stripeSession.payment_status === "unpaid" ? "PENDING" :
-                                         stripeSession.payment_status === "paid" ? "PAID" :
-                                         "FAILED";
-
-  const paymentIntentId = stripeSession.payment_intent as string;
-  let paymentMethodLast4 = "N/A";
-
-  if (paymentIntentId) {
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId) as unknown as Stripe.PaymentIntent & { charges: { data: Array<{ id: string }> } };
-
-    const chargeId = paymentIntent.charges?.data[0]?.id;
-    if (chargeId) {
-      const charge = await retrieveCharge(chargeId);
-      paymentMethodLast4 = charge?.payment_method_details?.card?.last4 || "N/A";
-    }
-  }
-
-  return { status: transactionStatus, last4: paymentMethodLast4 };
-}
-
 export async function GET() {
   try {
+    // Buscar todas as ordens na base de dados, incluindo os itens do pedido e as informações do usuário
     const orders = await prisma.order.findMany({
       include: {
         user: true,
@@ -55,36 +24,17 @@ export async function GET() {
       },
     });
 
-    const ordersWithPaymentDetails = await Promise.all(
-      orders.map(async (order) => {
-        let transactionStatus = order.status;
-        let paymentMethodLast4 = "N/A";
+    // Mapear as ordens e retornar as informações diretamente da base de dados
+    const ordersWithDetails = orders.map((order) => ({
+      ...order,
+      transactionStatus: order.status, // Utilizando o status da ordem diretamente
+      paymentMethod: order.transactionId ? 'N/A' : 'N/A', // Placeholder ou logica baseada na sua base de dados
+    }));
 
-        if (order.transactionId) {
-          try {
-            const paymentDetails = await getPaymentDetails(order.transactionId);
-            transactionStatus = paymentDetails.status;
-            paymentMethodLast4 = paymentDetails.last4;
-
-            if (order.status !== transactionStatus) {
-              await updateOrderStatus(order.id, transactionStatus);
-            }
-          } catch {
-            transactionStatus = "FAILED" as OrderStatus;
-          }
-        }
-
-        return {
-          ...order,
-          transactionStatus,
-          paymentMethod: paymentMethodLast4,
-        };
-      })
-    );
-
-    return NextResponse.json(ordersWithPaymentDetails);
+    // Retornar as ordens como resposta JSON
+    return NextResponse.json(ordersWithDetails);
   } catch (error) {
-    const errorMessage = (error instanceof Error) ? error.message : 'Erro desconhecido';
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     return NextResponse.json({ error: 'Erro ao buscar pedidos', detalhes: errorMessage }, { status: 500 });
   }
 }

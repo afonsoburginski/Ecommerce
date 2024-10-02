@@ -22,7 +22,7 @@ interface Order {
   };
   orderItems: OrderItem[];
   transactionId: string;
-  paymentMethod: string; // Incluindo o campo paymentMethod para capturar os últimos 4 dígitos
+  paymentMethod: string;
 }
 
 interface FormattedOrder {
@@ -55,7 +55,6 @@ export function useFetchTransactions() {
     refreshInterval: 10000,
   });
 
-  // Ensure the data is an array before calling map
   const formattedData: FormattedOrder[] = Array.isArray(data)
     ? data.map(order => ({
         id: order.id,

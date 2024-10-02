@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/button";
 export default function Products() {
   const [activeTab, setActiveTab] = useState("ACTIVE");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | undefined>(undefined); // Usando o tipo global Product
 
   const handleAddProduct = () => {
-    setSelectedProduct(null);
+    setSelectedProduct(undefined); // Usando undefined em vez de null
     setIsSheetOpen(true);
   };
 

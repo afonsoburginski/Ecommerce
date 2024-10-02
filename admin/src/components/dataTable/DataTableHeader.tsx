@@ -1,7 +1,6 @@
 import React from "react";
 import { flexRender, HeaderGroup, Header } from "@tanstack/react-table";
 import { TableHeader, TableHead, TableRow } from "@/components/ui/table";
-import { FormattedOrder } from "./DataTableColumns";
 
 interface DataTableHeaderProps {
   headerGroups: HeaderGroup<FormattedOrder>[];

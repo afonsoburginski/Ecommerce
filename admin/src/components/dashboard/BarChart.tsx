@@ -5,7 +5,13 @@ import { Bar, BarChart, CartesianGrid, XAxis, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 
-function generateDaysInMonth(year, month) {
+interface ChartData {
+  date: string;
+  total: number;
+  transactionsCount: number;
+}
+
+function generateDaysInMonth(year: number, month: number) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, day) => {
     const date = new Date(year, month, day + 1).toISOString().split("T")[0];
@@ -14,16 +20,18 @@ function generateDaysInMonth(year, month) {
   return days;
 }
 
-function mergeSalesWithDays(salesData, year, month) {
+function mergeSalesWithDays(salesData: any[], year: number, month: number) {
   const daysInMonth = generateDaysInMonth(year, month);
   return daysInMonth.map((day) => {
-    const saleForDay = salesData.find((sale) => sale.date === day.date);
+    const saleForDay = salesData.find(
+      (sale: { date: string }) => sale.date === day.date
+    );
     return saleForDay ? saleForDay : { ...day, transactionsCount: 0 };
   });
 }
 
 export default function Chart() {
-  const [chartData, setChartData] = useState([]);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
 
   useEffect(() => {
     async function fetchDailySales() {
@@ -33,6 +41,7 @@ export default function Chart() {
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth();
         const fullData = mergeSalesWithDays(salesData, currentYear, currentMonth);
+
         setChartData(fullData);
       } catch (error) {
         console.error("Erro ao buscar dados de vendas diárias:", error);
@@ -49,10 +58,10 @@ export default function Chart() {
         </div>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
-        <ChartContainer config={chartData} className="aspect-auto h-[250px] w-full">
+        <ChartContainer config={{}} className="aspect-auto h-[250px] w-full">
           <BarChart
             accessibilityLayer
-            data={chartData}
+            data={chartData} // Pass chartData here to the BarChart
             margin={{
               top: 5,
               right: 5,

@@ -13,7 +13,13 @@ import ProductTable from "./ProductTable";
 import Image from "next/image";
 import { useProductForm } from "@/hooks/useProductForm";
 
-export default function ProductRoot({ product, onClose, isOpen }) {
+interface ProductRootProps {
+  product?: Product;
+  onClose: () => void;
+  isOpen: boolean;
+}
+
+export default function ProductRoot({ product, onClose, isOpen }: ProductRootProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const {
     details,
@@ -29,9 +35,9 @@ export default function ProductRoot({ product, onClose, isOpen }) {
     handleVariantChange,
     handleAddVariant,
     handleRemoveVariant,
-    resetForm, // Desestruturado resetForm
-    categories, // Recebe categorias do hook
-    tags,       // Recebe tags do hook
+    resetForm,
+    categories,
+    tags,
   } = useProductForm();
 
   const sheetAdditionalClass = isPreviewOpen ? "max-w-6xl" : "max-w-4xl";
@@ -41,27 +47,26 @@ export default function ProductRoot({ product, onClose, isOpen }) {
       setDetails({
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: product.price.toString(),
         description: product.description,
         categoryId: product.categoryId,
         tagId: product.tagId,
-        // Removido: categories e tags não fazem mais parte de ProductDetails
-        stock: product.stock,
+        stock: product.stock.toString(),
       });
-
+  
       if (product.images && product.images.length > 0) {
         setMainImage(product.images[0]);
       }
-
+  
       if (product.images && product.images.length > 1) {
         const thumbnails = product.images.slice(1);
         setThumbImages(thumbnails);
       }
     } else {
-      resetForm(); // Usar resetForm em vez de setDetails(initialProductDetails())
+      resetForm();
     }
   }, [product, setDetails, setMainImage, setThumbImages, resetForm]);
-
+  
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent

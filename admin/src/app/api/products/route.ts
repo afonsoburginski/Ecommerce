@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { uploadImage } from '@/services/supabaseStorage';
+import { ProductStatus } from '@prisma/client';
 
 export async function GET() {
   try {
@@ -38,7 +39,8 @@ export async function POST(request: Request) {
     const categories = JSON.parse(formData.get('categories') as string) as number[];
     const tags = JSON.parse(formData.get('tags') as string) as number[];
 
-    const status = "ACTIVE";
+    // Use o enum ProductStatus em vez de uma string
+    const status = ProductStatus.ACTIVE;
 
     if (!name || !description || isNaN(price) || isNaN(stock)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
       description,
       price,
       stock,
-      status,
+      status, // Agora estamos passando o enum correto
       images: imageUrl ? [imageUrl] : [],
       categories: { connect: categories.map(id => ({ id })) },
       tags: { connect: tags.map(id => ({ id })) },
@@ -80,6 +82,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Erro Interno do Servidor', details: error.message }, { status: 500 });
   }
 }
+
 
 export async function PUT(request: Request) {
   try {

@@ -1,5 +1,4 @@
 // src/contexts/ProductContext.tsx
-
 "use client";
 
 import React, { createContext, ReactNode, useContext } from "react";
@@ -8,10 +7,10 @@ import { useProductData } from "@/hooks/useProductData";
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { products, categories, tags, isLoading, error, mutateProducts } = useProductData();
+  const { products, categories, tags, isLoading, error, mutateProducts, mutateCategories, mutateTags, mutateTopSellingProducts } = useProductData();
 
   return (
-    <ProductContext.Provider value={{ products, categories, tags, isLoading, isError: !!error, mutateProducts }}>
+    <ProductContext.Provider value={{ products, categories, tags, isLoading, isError: !!error, mutateProducts, mutateCategories, mutateTags, mutateTopSellingProducts }}>
       {children}
     </ProductContext.Provider>
   );
@@ -23,7 +22,7 @@ export const useProducts = () => {
     throw new Error("useProducts must be used within a ProductProvider");
   }
 
-  const { products, categories, tags, isLoading, isError } = context;
+  const { products, categories, tags, isLoading, isError, mutateProducts, mutateCategories, mutateTags, mutateTopSellingProducts } = context;
 
-  return { products, categories, tags, isLoading, isError, mutateProducts: context.mutateProducts };
+  return { products, categories, tags, isLoading, isError, mutateProducts, mutateCategories, mutateTags, mutateTopSellingProducts };
 };
