@@ -1,6 +1,4 @@
 // schema.prisma
-
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,7 +14,6 @@ model Product {
   name        String
   description String
   price       Float
-  stock       Int
   images      String[]
   status      ProductStatus
   createdAt   DateTime      @default(now())

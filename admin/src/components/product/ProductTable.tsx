@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import React from "react";
 
 const colorOptions = [
   { label: "Red", value: "red", color: "#FF5630" },
@@ -72,7 +73,7 @@ export default function ProductTable({
                   <Input
                     type="number"
                     value={variant.stock}
-                    onChange={(e) => handleVariantChange(index, "stock", e.target.value)}
+                    onChange={(e) => handleVariantChange(index, "stock", Number(e.target.value))}
                     className="w-28"
                     min="0"
                   />

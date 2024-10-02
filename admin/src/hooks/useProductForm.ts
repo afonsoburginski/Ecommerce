@@ -1,9 +1,7 @@
-// hooks/useProductForm.ts
 import { useState, useEffect, useCallback } from "react";
 import { useProductData } from "./useProductData";
 import { useToast } from "@/components/ui/use-toast";
 
-// Definição de tipos para o produto, categorias e tags
 interface Category {
   id: number;
   name: string;
@@ -19,9 +17,15 @@ interface ProductDetails {
   name: string;
   price: string;
   description: string;
-  stock: string;
   categoryId: number | null;
   tagId: number | null;
+}
+
+interface Variant {
+  sku: string;
+  stock: number;
+  size: string;
+  color: string;
 }
 
 const initialProductDetails = (): ProductDetails => ({
@@ -29,48 +33,43 @@ const initialProductDetails = (): ProductDetails => ({
   name: "",
   price: "",
   description: "",
-  stock: "",
   categoryId: null,
   tagId: null,
 });
 
-const initialVariant = () => ({
+const initialVariant = (): Variant => ({
   sku: "",
   stock: 0,
   size: "",
   color: "",
 });
 
-// Função para converter os campos de preço, estoque, categoria e tag para número
-const shouldConvertToNumber = (field: string) => 
-  field === "price" || field === "stock" || field === "categoryId" || field === "tagId";
+const shouldConvertToNumber = (field: string) =>
+  field === "price" || field === "categoryId" || field === "tagId";
 
-// Função para parsear preço e estoque
-const parsePriceAndStock = (price: any, stock: any) => {
-  const parsedPrice = typeof price === "string"
-    ? parseFloat(price.replace("R$", "").replace(",", ".").trim())
-    : parseFloat(price);
+const parsePrice = (price: any) => {
+  const parsedPrice = typeof price === "string" && price.trim() !== ""
+    ? parseFloat(price.replace(/[^\d,.]/g, "").replace(",", ".").trim())
+    : typeof price === "number"
+    ? price
+    : NaN;
 
   return {
     price: !isNaN(parsedPrice) ? parsedPrice : NaN,
-    stock: !isNaN(stock) ? Number(stock) : NaN,
   };
 };
 
-// Função de validação para atualização
-const validateFormForUpdate = (details: any) => {
-  return details.id !== null;
-};
-
-// Função de validação completa do formulário
 const validateForm = (
-  details: ProductDetails, 
-  price: number, 
-  stock: number, 
-  mainImage: File | null, 
-  productStatus: string
+  details: ProductDetails,
+  price: number,
+  variants: Variant[],
+  mainImage: File | null
 ) => {
-  console.log('Validando o formulário...');
+  console.log("Validando o formulário...", details);
+  console.log("Preço:", price);
+  console.log("Imagem Principal:", mainImage);
+  console.log("Variantes:", variants);
+
   if (!details.name.trim()) {
     console.error("Erro: O nome do produto é obrigatório.");
     return false;
@@ -81,22 +80,17 @@ const validateForm = (
     return false;
   }
 
-  if (isNaN(stock) || stock < 0) {
-    console.error("Erro: O estoque do produto é inválido.");
-    return false;
-  }
-
   if (!details.description.trim()) {
     console.error("Erro: A descrição do produto é obrigatória.");
     return false;
   }
 
-  if (details.categoryId === null) {
+  if (details.categoryId === null || isNaN(Number(details.categoryId))) {
     console.error("Erro: Selecione uma categoria válida.");
     return false;
   }
 
-  if (details.tagId === null) {
+  if (details.tagId === null || isNaN(Number(details.tagId))) {
     console.error("Erro: Selecione uma tag válida.");
     return false;
   }
@@ -106,19 +100,36 @@ const validateForm = (
     return false;
   }
 
-  console.log('Formulário validado com sucesso.');
+  if (!variants.length) {
+    console.error("Erro: Pelo menos uma variante deve ser adicionada.");
+    return false;
+  }
+
+  for (const variant of variants) {
+    if (variant.stock === undefined || variant.stock === null || isNaN(variant.stock)) {
+      console.error("Erro: Stock inválido ou ausente para uma das variantes.");
+      return false;
+    }
+  }  
+
+  console.log("Formulário validado com sucesso.");
   return true;
 };
 
-// Função para criar o FormData
 const createFormData = (
   details: ProductDetails,
   price: number,
-  stock: number,
   mainImage: File | null,
   thumbImages: (File | null)[],
-  variants: any[]
+  variants: Variant[]
 ) => {
+  console.log("Criando FormData com os seguintes dados:");
+  console.log("Detalhes do Produto:", details);
+  console.log("Preço:", price);
+  console.log("Imagem Principal:", mainImage);
+  console.log("Imagens em miniatura:", thumbImages);
+  console.log("Variantes:", variants);
+
   const formData = new FormData();
 
   if (details.id) {
@@ -128,7 +139,6 @@ const createFormData = (
   formData.append("name", details.name);
   formData.append("description", details.description);
   formData.append("price", String(price));
-  formData.append("stock", String(stock));
   formData.append("categories", JSON.stringify([details.categoryId]));
   formData.append("tags", JSON.stringify([details.tagId]));
   formData.append("variants", JSON.stringify(variants));
@@ -144,41 +154,34 @@ const createFormData = (
   return formData;
 };
 
-// Hook principal que gerencia o formulário do produto
 export const useProductForm = () => {
   const { toast } = useToast();
   const { categories, tags, isLoading, error } = useProductData();
   const [details, setDetails] = useState<ProductDetails>(initialProductDetails());
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [thumbImages, setThumbImages] = useState<(File | null)[]>([null, null]);
-  const [productStatus, setProductStatus] = useState<string>("");
-  const [variants, setVariants] = useState<any[]>([]);
+  const [variants, setVariants] = useState<Variant[]>([]); // Tipagem de variants ajustada
   const [isError, setIsError] = useState<boolean>(false);
 
-  // Atualiza as categorias e tags quando os dados são carregados
   useEffect(() => {
     if (!isLoading && !error && categories && tags) {
-      console.log('Categorias carregadas:', categories);
-      console.log('Tags carregadas:', tags);
+      console.log("Categorias carregadas:", categories);
+      console.log("Tags carregadas:", tags);
 
       setDetails((prevDetails) => ({
         ...prevDetails,
-        // Removido: categories e tags não fazem mais parte de ProductDetails
       }));
     }
   }, [categories, tags, isLoading, error]);
 
-  // Função para resetar o formulário
   const resetForm = useCallback(() => {
-    console.log('Resetando o formulário para valores iniciais.');
+    console.log("Resetando o formulário para valores iniciais.");
     setDetails(initialProductDetails());
     setMainImage(null);
     setThumbImages([null, null]);
-    setProductStatus("");
     setVariants([]);
   }, []);
 
-  // Função para selecionar imagem
   const handleImageSelect = useCallback((file: File, index: number | "main") => {
     if (index === "main") {
       setMainImage(file);
@@ -189,49 +192,55 @@ export const useProductForm = () => {
         return updatedThumbs;
       });
     }
+    console.log(`Imagem ${index === "main" ? "principal" : `miniatura ${index}`}:`, file);
   }, []);
 
-  // Função para mudar os detalhes do produto
   const handleDetailsChange = useCallback((field: string, value: any) => {
+    console.log(`Atualizando o campo ${field} com o valor:`, value);
     setDetails((prev) => ({
       ...prev,
       [field]: shouldConvertToNumber(field) ? (isNaN(Number(value)) ? null : Number(value)) : value,
     }));
   }, []);
+  
 
-  // Função para gerenciar as variantes
-  const handleVariantChange = useCallback((index: number, field: string, value: any) => {
-    setVariants((prev) => {
-      const updatedVariants = [...prev];
-      updatedVariants[index][field] = field === 'stock' ? Number(value) : value;
-      return updatedVariants;
-    });
-  }, []);
+  const handleVariantChange = useCallback(
+    (index: number, field: keyof Variant, value: any) => {
+      setVariants((prev) => {
+        const updatedVariants: Variant[] = [...prev];
+        updatedVariants[index] = {
+          ...updatedVariants[index],
+          [field]: field === "stock" ? Number(value) : value,
+        };
+        return updatedVariants;
+      });
+    },
+    []
+  );   
 
-  // Função para adicionar variante
   const handleAddVariant = useCallback(() => {
     setVariants((prev) => [...prev, initialVariant()]);
-  }, []);
+    console.log("Adicionada nova variante.");
+  }, []);  
 
-  // Função para remover variante
   const handleRemoveVariant = useCallback((index: number) => {
     setVariants((prev) => prev.filter((_, i) => i !== index));
+    console.log(`Variante ${index} removida.`);
   }, []);
 
-  // Função para salvar o produto
   const handleSave = async () => {
-    const { price, stock } = parsePriceAndStock(details.price, details.stock);
+    const { price } = parsePrice(details.price);
 
-    if (details.id && !validateFormForUpdate(details)) {
+    if (!validateForm(details, price, variants, mainImage)) {
       toast({
         title: "Erro na validação",
-        description: "Verifique os campos necessários para a atualização.",
+        description: "Verifique os campos obrigatórios.",
         variant: "destructive",
       });
       return;
     }
 
-    const formData = createFormData(details, price, stock, mainImage, thumbImages, variants);
+    const formData = createFormData(details, price, mainImage, thumbImages, variants);
 
     try {
       const response = await fetch("/api/products", {
@@ -267,8 +276,8 @@ export const useProductForm = () => {
     setMainImage,
     thumbImages,
     setThumbImages,
-    productStatus,
     variants,
+    setVariants,
     handleImageSelect,
     handleDetailsChange,
     handleVariantChange,

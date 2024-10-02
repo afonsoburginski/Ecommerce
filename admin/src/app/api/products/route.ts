@@ -26,11 +26,6 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const stock = parseInt(formData.get('stock') as string);
-
-    if (isNaN(stock)) {
-      return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
-    }
 
     const file = formData.get('image') as File | null;
     const name = formData.get('name') as string;
@@ -38,14 +33,23 @@ export async function POST(request: Request) {
     const price = parseFloat(formData.get('price') as string);
     const categories = JSON.parse(formData.get('categories') as string) as number[];
     const tags = JSON.parse(formData.get('tags') as string) as number[];
+    const variants = JSON.parse(formData.get('variants') as string);
 
-    // Use o enum ProductStatus em vez de uma string
     const status = ProductStatus.ACTIVE;
 
-    if (!name || !description || isNaN(price) || isNaN(stock)) {
+    // Verificar as variantes
+    for (const variant of variants) {
+      if (variant.stock === undefined || variant.stock === null || isNaN(variant.stock) || variant.stock < 0) {
+        return NextResponse.json({ error: 'Stock inválido ou ausente' }, { status: 400 });
+      }
+    }
+
+    // Verificar os campos obrigatórios
+    if (!name || !description || isNaN(price)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Fazer upload da imagem, se houver
     let imageUrl = null;
     if (file) {
       imageUrl = await uploadImage(file);
@@ -54,17 +58,17 @@ export async function POST(request: Request) {
       }
     }
 
+    // Criar os dados do novo produto
     const newProductData = {
       name,
       description,
       price,
-      stock,
-      status, // Agora estamos passando o enum correto
+      status,
       images: imageUrl ? [imageUrl] : [],
       categories: { connect: categories.map(id => ({ id })) },
       tags: { connect: tags.map(id => ({ id })) },
       variants: {
-        create: JSON.parse(formData.get('variants') as string).map((variant: any) => ({
+        create: variants.map((variant: any) => ({
           sku: variant.sku,
           stock: variant.stock,
           size: variant.size,
@@ -73,12 +77,14 @@ export async function POST(request: Request) {
       },
     };
 
+    // Criar o novo produto no banco de dados
     const newProduct = await prisma.product.create({
       data: newProductData,
     });
 
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error: any) {
+    console.error('Erro Interno do Servidor:', error.message);
     return NextResponse.json({ error: 'Erro Interno do Servidor', details: error.message }, { status: 500 });
   }
 }

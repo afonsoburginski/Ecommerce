@@ -1,4 +1,3 @@
-// components/product/ProductForm.tsx
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +24,6 @@ interface ProductDetails {
   name: string;
   price: string;
   description: string;
-  stock: string;
   categoryId: number | null;
   tagId: number | null;
 }
@@ -191,7 +189,7 @@ export default function ProductForm({
         <div>
           <Label htmlFor="category">Categoria</Label>
           <Select 
-            onValueChange={(value) => handleDetailsChange("categoryId", value)}
+            onValueChange={(value) => handleDetailsChange("categoryId", Number(value))} // Converte string para número
             value={details.categoryId !== null ? String(details.categoryId) : undefined} // Usar undefined para placeholder
           >
             <SelectTrigger className="w-full">
@@ -213,7 +211,7 @@ export default function ProductForm({
         <div>
           <Label htmlFor="tags">Tags</Label>
           <Select 
-            onValueChange={(value) => handleDetailsChange("tagId", value)}
+            onValueChange={(value) => handleDetailsChange("tagId", Number(value))} // Converte string para número
             value={details.tagId !== null ? String(details.tagId) : undefined} // Usar undefined para placeholder
           >
             <SelectTrigger className="w-full">
@@ -240,6 +238,7 @@ export default function ProductForm({
           id="price" 
           value={details.price} 
           onChange={(e) => handleDetailsChange("price", e.target.value)} 
+          placeholder="R$ 0,00" // Placeholder adicionado
         />
       </div>
     </>

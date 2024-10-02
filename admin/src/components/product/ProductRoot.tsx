@@ -1,4 +1,3 @@
-// components/product/ProductRoot.tsx
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -32,6 +31,7 @@ export default function ProductRoot({ product, onClose, isOpen }: ProductRootPro
     handleDetailsChange,
     handleSave,
     variants,
+    setVariants, // Novo para configurar as variantes
     handleVariantChange,
     handleAddVariant,
     handleRemoveVariant,
@@ -51,13 +51,22 @@ export default function ProductRoot({ product, onClose, isOpen }: ProductRootPro
         description: product.description,
         categoryId: product.categoryId,
         tagId: product.tagId,
-        stock: product.stock.toString(),
       });
-  
+
+      // Preencher as variantes do produto
+      setVariants(
+        product.variants.map((variant) => ({
+          sku: variant.sku,
+          stock: variant.stock,
+          size: variant.size,
+          color: variant.color,
+        }))
+      );
+
       if (product.images && product.images.length > 0) {
         setMainImage(product.images[0]);
       }
-  
+
       if (product.images && product.images.length > 1) {
         const thumbnails = product.images.slice(1);
         setThumbImages(thumbnails);
@@ -65,8 +74,8 @@ export default function ProductRoot({ product, onClose, isOpen }: ProductRootPro
     } else {
       resetForm();
     }
-  }, [product, setDetails, setMainImage, setThumbImages, resetForm]);
-  
+  }, [product, setDetails, setMainImage, setThumbImages, resetForm, setVariants]);
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
@@ -95,8 +104,8 @@ export default function ProductRoot({ product, onClose, isOpen }: ProductRootPro
                 details={details}
                 handleDetailsChange={handleDetailsChange}
                 handleImageSelect={handleImageSelect}
-                categories={categories} // Passar categorias
-                tags={tags}           // Passar tags
+                categories={categories}
+                tags={tags}
               />
               <ProductTable
                 variants={variants}
@@ -178,6 +187,23 @@ export default function ProductRoot({ product, onClose, isOpen }: ProductRootPro
                       ? tags.find((tag) => tag.id === details.tagId)?.name
                       : "Nenhuma Tag Selecionada"}
                   </span>
+                </div>
+
+                <div className="mb-4">
+                  <h4 className="text-gray-700 font-semibold">Variantes:</h4>
+                  {variants.length > 0 ? (
+                    variants.map((variant, index) => (
+                      <div key={index} className="text-gray-900">
+                        <p>SKU: {variant.sku}</p>
+                        <p>Estoque: {variant.stock}</p>
+                        <p>Tamanho: {variant.size}</p>
+                        <p>Cor: {variant.color}</p>
+                        <hr className="my-2" />
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500">Nenhuma Variante Adicionada</p>
+                  )}
                 </div>
               </div>
             </div>
